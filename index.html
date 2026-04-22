@@ -203,9 +203,13 @@
     cursor: pointer;
     line-height: 1.3;
     min-height: 68px;
+    max-height: 136px;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    word-break: break-word;
     user-select: none;
     position: relative;
     transition: background .12s;
@@ -448,8 +452,11 @@
     border-bottom: 3px solid var(--navy);
     border-right: 2px solid rgba(255,255,255,.2);
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+    min-height: 32px;
+    max-height: 64px;
     letter-spacing: .3px;
   }
   .bottom-label:last-of-type { border-right: none; }
@@ -623,13 +630,13 @@
         <input type="radio" name="colMode" id="optColOff" value="off" onchange="applyColMode(); saveOptions()">
         <span class="radio-text"><strong>Hidden</strong> <span>— no category labels shown</span></span>
       </label>
-      <label class="option-radio-row" for="optColVertical">
-        <input type="radio" name="colMode" id="optColVertical" value="vertical" onchange="applyColMode(); saveOptions()" checked>
-        <span class="radio-text"><strong>Vertical</strong> <span>— sidebar labels beside each column</span></span>
-      </label>
       <label class="option-radio-row" for="optColHorizontal">
-        <input type="radio" name="colMode" id="optColHorizontal" value="horizontal" onchange="applyColMode(); saveOptions()">
-        <span class="radio-text"><strong>Horizontal</strong> <span>— category names as a bottom row</span></span>
+        <input type="radio" name="colMode" id="optColHorizontal" value="horizontal" onchange="applyColMode(); saveOptions()" checked>
+        <span class="radio-text"><strong>Horizontal</strong> <span>— category names as a row just below the header</span></span>
+      </label>
+      <label class="option-radio-row" for="optColVertical">
+        <input type="radio" name="colMode" id="optColVertical" value="vertical" onchange="applyColMode(); saveOptions()">
+        <span class="radio-text"><strong>Vertical</strong> <span>— sidebar labels beside each column</span></span>
       </label>
     </div>
     <label class="option-row" for="optFreeSpace">
@@ -1135,7 +1142,7 @@ function saveOptions() {
   } catch(e) {}
 }
 
-const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, freeSpace: false, gameMode: '1line', showScore: true, colMode: 'vertical' };
+const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, freeSpace: false, gameMode: '1line', showScore: true, colMode: 'horizontal' };
 
 function getColMode() {
   const r = document.querySelector('input[name="colMode"]:checked');
@@ -1254,8 +1261,8 @@ try {
   const saved = raw ? JSON.parse(raw) : {};
   let changed = false;
   if (saved.colMode === undefined) {
-    saved.colMode = isMobile ? 'off' : 'vertical';
-    const colEl = document.querySelector(`input[name="colMode"][value="${saved.colMode}"]`);
+    saved.colMode = 'horizontal';
+    const colEl = document.querySelector(`input[name="colMode"][value="horizontal"]`);
     if (colEl) colEl.checked = true;
     changed = true;
   }
