@@ -445,13 +445,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 3px solid var(--navy);
+    border-bottom: 3px solid var(--navy);
     border-right: 2px solid rgba(255,255,255,.2);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     letter-spacing: .3px;
-    grid-row: 7;
   }
   .bottom-label:last-of-type { border-right: none; }
   .bl-bot-b { background: var(--red);     grid-column: 1; }
@@ -616,24 +615,23 @@
         <span class="toggle-slider"></span>
       </div>
     </label>
-    <label class="option-row" for="optHideLabels">
-      <span class="option-text">Hide column names
-        <span>Hides the vertical category labels on the card</span>
-      </span>
-      <div class="toggle-switch">
-        <input type="checkbox" id="optHideLabels" onchange="applyHideLabels(); saveOptions()">
-        <span class="toggle-slider"></span>
-      </div>
-    </label>
-    <label class="option-row" for="optVerticalLabels">
-      <span class="option-text">Vertical column names
-        <span>When off, category names show as a bottom row instead</span>
-      </span>
-      <div class="toggle-switch">
-        <input type="checkbox" id="optVerticalLabels" checked onchange="applyVerticalLabels(); saveOptions()">
-        <span class="toggle-slider"></span>
-      </div>
-    </label>
+    <!-- Column Names -->
+    <div class="option-group">
+      <div class="option-group-title">📋 Column Names</div>
+      <div class="option-group-desc">Control how category names are shown on the card.</div>
+      <label class="option-radio-row" for="optColOff">
+        <input type="radio" name="colMode" id="optColOff" value="off" onchange="applyColMode(); saveOptions()">
+        <span class="radio-text"><strong>Hidden</strong> <span>— no category labels shown</span></span>
+      </label>
+      <label class="option-radio-row" for="optColVertical">
+        <input type="radio" name="colMode" id="optColVertical" value="vertical" onchange="applyColMode(); saveOptions()" checked>
+        <span class="radio-text"><strong>Vertical</strong> <span>— sidebar labels beside each column</span></span>
+      </label>
+      <label class="option-radio-row" for="optColHorizontal">
+        <input type="radio" name="colMode" id="optColHorizontal" value="horizontal" onchange="applyColMode(); saveOptions()">
+        <span class="radio-text"><strong>Horizontal</strong> <span>— category names as a bottom row</span></span>
+      </label>
+    </div>
     <label class="option-row" for="optFreeSpace">
       <span class="option-text">Free space (center square)
         <span>The center square is automatically marked for free</span>
@@ -682,6 +680,8 @@
 </div>
 
 <div class="copyright">
+  <a href="mailto:garagesalebingo@gmail.com" style="color:#888; text-decoration:underline; font-style:italic; font-size:.72rem;">Questions or comments?</a>
+  <br>
   © 2026 Garage Sale Bingo. All game content, rules, and design are the property of Rob Barnett. All rights reserved.
 </div>
 
@@ -800,29 +800,37 @@ function drawVenmoQR() {
 let audioCtx = null;
 let audioUnlocked = false;
 
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-// iOS Safari requires AudioContext to be resumed inside a user gesture
-// We unlock it on first touch anywhere on the page
+// iOS Safari: AudioContext must be CREATED inside a user gesture, not just resumed.
+// We defer creation until first touch/click.
 function unlockAudio() {
   if (audioUnlocked) return;
   try {
-    const ctx = getAudioCtx();
-    // Create and immediately play a silent buffer to unlock
-    const buf = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    // Play a zero-length silent buffer to fully unlock on iOS
+    const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    const src = audioCtx.createBufferSource();
     src.buffer = buf;
-    src.connect(ctx.destination);
+    src.connect(audioCtx.destination);
     src.start(0);
-    if (ctx.state === 'suspended') ctx.resume();
     audioUnlocked = true;
   } catch(e) {}
 }
-document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
-document.addEventListener('click', unlockAudio, { once: false, passive: true });
+document.addEventListener('touchstart', unlockAudio, { passive: true });
+document.addEventListener('touchend',   unlockAudio, { passive: true });
+document.addEventListener('click',      unlockAudio, { passive: true });
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
 
 function playStampSound() {
   if (!document.getElementById('optSound').checked) return;
@@ -908,28 +916,28 @@ function renderCard(animate) {
   });
 
   // Rows 2-6: item cells + label cells
-  // Grid columns: 1=B-items, 2=B-label, 3=I-items, 4=I-label, ... 9=O-items, 10=O-label
-  // Place item cells first (they'll stack in document order within their col)
+  // Grid layout: row 1 = BINGO letters, row 2 = horizontal labels (shown/hidden),
+  // rows 3-7 = item cells, vertical labels span rows 3-8
   for (let col = 0; col < 5; col++) {
     const itemGridCol = col * 2 + 1;
     for (let row = 0; row < 5; row++) {
-      const idx  = col * 5 + row;
-      const gridRow = row + 2;
-      const isMarked  = markedCells.has(idx) ? ' stamped' : '';
+      const idx     = col * 5 + row;
+      const gridRow = row + 3; // shifted down by 1 to make room for horizontal label row
+      const isMarked = markedCells.has(idx) ? ' stamped' : '';
       html += `<div class="bingo-cell item-${COL_KEYS[col]}${isMarked}" data-index="${idx}" style="grid-column:${itemGridCol};grid-row:${gridRow};" onclick="toggleCell(this)">${cardData.items[col][row]}</div>`;
     }
   }
 
-  // Label cells — vertical (span rows 2-6) always rendered; visible depends on options
+  // Vertical label cells — span rows 3-8
   for (let col = 0; col < 5; col++) {
     const labelGridCol = col * 2 + 2;
-    html += `<div class="cat-label cat-${COL_KEYS[col]}" style="grid-column:${labelGridCol};grid-row:2/7;">${cardData.categories[col]}</div>`;
+    html += `<div class="cat-label cat-${COL_KEYS[col]}" style="grid-column:${labelGridCol};grid-row:3/8;">${cardData.categories[col]}</div>`;
   }
 
-  // Bottom label cells — rendered always, shown/hidden via CSS class on card-outer
+  // Horizontal label cells — sit at row 2, just below BINGO header
   for (let col = 0; col < 5; col++) {
     const itemGridCol = col * 2 + 1;
-    html += `<div class="bottom-label bl-bot-${COL_KEYS[col]}" style="grid-column:${itemGridCol};grid-row:7;">${cardData.categories[col]}</div>`;
+    html += `<div class="bottom-label bl-bot-${COL_KEYS[col]}" style="grid-column:${itemGridCol};grid-row:2;">${cardData.categories[col]}</div>`;
   }
 
   outer.innerHTML = html;
@@ -1094,8 +1102,7 @@ function generateCard() {
   document.getElementById('winBanner').classList.remove('show');
   renderCard(true);
   applyFreeSpace();
-  applyHideLabels();
-  applyVerticalLabels();
+  applyColMode();
   saveState();
 }
 
@@ -1114,36 +1121,41 @@ function getGameMode() {
 function saveOptions() {
   try {
     localStorage.setItem('gsb_options', JSON.stringify({
-      sound:          document.getElementById('optSound').checked,
-      confirmAll:     document.getElementById('optConfirmAll').checked,
-      darkMode:       document.getElementById('optDarkMode').checked,
-      showScore:      document.getElementById('optShowScore').checked,
-      hideLabels:     document.getElementById('optHideLabels').checked,
-      verticalLabels: document.getElementById('optVerticalLabels').checked,
-      freeSpace:      document.getElementById('optFreeSpace').checked,
-      gameMode:       getGameMode(),
+      sound:      document.getElementById('optSound').checked,
+      confirmAll: document.getElementById('optConfirmAll').checked,
+      darkMode:   document.getElementById('optDarkMode').checked,
+      showScore:  document.getElementById('optShowScore').checked,
+      freeSpace:  document.getElementById('optFreeSpace').checked,
+      gameMode:   getGameMode(),
+      colMode:    getColMode(),
     }));
   } catch(e) {}
 }
 
-const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, hideLabels: false, freeSpace: false, gameMode: '1line', showScore: true, verticalLabels: true };
+const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, freeSpace: false, gameMode: '1line', showScore: true, colMode: 'vertical' };
+
+function getColMode() {
+  const r = document.querySelector('input[name="colMode"]:checked');
+  return r ? r.value : 'vertical';
+}
 
 function applyOptionsToUI(o) {
-  document.getElementById('optSound').checked          = !!o.sound;
-  document.getElementById('optConfirmAll').checked     = !!o.confirmAll;
-  document.getElementById('optDarkMode').checked       = !!o.darkMode;
-  document.getElementById('optShowScore').checked      = o.showScore !== undefined ? !!o.showScore : true;
-  document.getElementById('optHideLabels').checked     = !!o.hideLabels;
-  document.getElementById('optVerticalLabels').checked = o.verticalLabels !== undefined ? !!o.verticalLabels : true;
-  document.getElementById('optFreeSpace').checked      = !!o.freeSpace;
+  document.getElementById('optSound').checked      = !!o.sound;
+  document.getElementById('optConfirmAll').checked = !!o.confirmAll;
+  document.getElementById('optDarkMode').checked   = !!o.darkMode;
+  document.getElementById('optShowScore').checked  = o.showScore !== undefined ? !!o.showScore : true;
+  document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
   const modeVal = o.gameMode || '1line';
   const modeEl  = document.querySelector(`input[name="gameMode"][value="${modeVal}"]`);
   if (modeEl) modeEl.checked = true;
   else document.getElementById('mode1line').checked = true;
+  const colVal = o.colMode || 'vertical';
+  const colEl  = document.querySelector(`input[name="colMode"][value="${colVal}"]`);
+  if (colEl) colEl.checked = true;
+  else document.getElementById('optColVertical').checked = true;
   applyDarkMode();
   applyShowScore();
-  applyHideLabels();
-  applyVerticalLabels();
+  applyColMode();
 }
 
 function loadOptions() {
@@ -1166,7 +1178,7 @@ function confirmRevertDefaults() {
   applyOptionsToUI(DEFAULTS);
   applyFreeSpace();
   applyShowScore();
-  applyHideLabels();
+  applyColMode();
   saveOptions();
 }
 function applyDarkMode() {
@@ -1177,20 +1189,17 @@ function applyShowScore() {
   const on = document.getElementById('optShowScore').checked;
   document.getElementById('scoreSection').classList.toggle('hidden', !on);
 }
-function applyHideLabels() {
-  const hidden   = document.getElementById('optHideLabels').checked;
-  const vertical = document.getElementById('optVerticalLabels').checked;
-  const outer    = document.getElementById('cardOuter');
-  // If labels are hidden entirely, both modes collapse
-  outer.classList.toggle('labels-hidden', hidden && vertical);
-  outer.classList.toggle('labels-bottom',  hidden ? false : !vertical);
-  // Show/hide bottom label cells
+function applyColMode() {
+  const mode  = getColMode();
+  const outer = document.getElementById('cardOuter');
+  // vertical: side labels visible, bottom row hidden
+  // horizontal: side labels hidden (--label-w:0), bottom row visible
+  // off: side labels hidden, bottom row hidden
+  outer.classList.toggle('labels-hidden', mode === 'off' || mode === 'horizontal');
+  outer.classList.toggle('labels-bottom',  mode === 'horizontal');
   document.querySelectorAll('.bottom-label').forEach(el => {
-    el.style.display = (!hidden && !vertical) ? '' : 'none';
+    el.style.display = mode === 'horizontal' ? '' : 'none';
   });
-}
-function applyVerticalLabels() {
-  applyHideLabels(); // vertical state is handled together with hide state
 }
 function applyFreeSpace() {
   const on  = document.getElementById('optFreeSpace').checked;
@@ -1236,21 +1245,28 @@ if (loadState()) {
 }
 loadOptions();
 
-// On first visit, set mobile-specific defaults if no saved options exist
+// On first visit, set platform-specific defaults if no saved options exist
 try {
   const raw   = localStorage.getItem('gsb_options');
   const saved = raw ? JSON.parse(raw) : {};
   let changed = false;
-  if (isMobile && saved.hideLabels === undefined)     { saved.hideLabels = true;      document.getElementById('optHideLabels').checked = true;     changed = true; }
-  if (isMobile && saved.verticalLabels === undefined) { saved.verticalLabels = false; document.getElementById('optVerticalLabels').checked = false; changed = true; }
-  if (!isMobile && saved.verticalLabels === undefined){ saved.verticalLabels = true;  document.getElementById('optVerticalLabels').checked = true;  changed = true; }
-  if (saved.showScore === undefined)                  { saved.showScore = true;       document.getElementById('optShowScore').checked = true;       changed = true; }
+  if (saved.colMode === undefined) {
+    saved.colMode = isMobile ? 'off' : 'vertical';
+    const colEl = document.querySelector(`input[name="colMode"][value="${saved.colMode}"]`);
+    if (colEl) colEl.checked = true;
+    changed = true;
+  }
+  if (saved.showScore === undefined) {
+    saved.showScore = true;
+    document.getElementById('optShowScore').checked = true;
+    changed = true;
+  }
   if (changed) saveOptions();
 } catch(e) {}
 
 applyShowScore();
 applyFreeSpace();
-applyHideLabels();
+applyColMode();
 </script>
 </body>
 </html>
