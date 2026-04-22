@@ -293,14 +293,12 @@
   .score-section {
     max-width: 900px; margin: 22px auto 0;
     background: white; border: 3px solid var(--navy);
-    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy); padding: 14px 18px;
+    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy); padding: 12px 18px;
+    text-align: center;
   }
-  .score-title { font-family:'Permanent Marker',cursive; font-size:1.25rem; color:var(--navy); margin-bottom:10px; text-align:center; }
-  .score-row { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; }
-  .score-box { background:var(--cream); border:2px solid var(--navy); border-radius:10px; padding:7px 16px; text-align:center; min-width:105px; }
-  .score-box .lbl { font-size:.68rem; font-weight:800; text-transform:uppercase; color:#888; letter-spacing:1px; }
-  .score-box .val { font-family:'Fredoka One',cursive; font-size:1.45rem; color:var(--navy); }
-  .score-box .val.score-num { color:var(--red); }
+  .score-section.hidden { display: none; }
+  .score-title { font-family:'Permanent Marker',cursive; font-size:1.3rem; color:var(--navy); }
+  .score-title .score-num { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--red); }
 
   /* ── RULES ── */
   .rules-section {
@@ -431,6 +429,37 @@
   }
   .bingo-cell.free-space:hover { background: var(--yellow) !important; }
 
+  /* Bottom-row label mode */
+  .card-outer.labels-bottom {
+    --label-w: 0px;
+  }
+  .card-outer.labels-bottom .cat-label {
+    border-left: none; border-right: none; padding: 0;
+  }
+  .bottom-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(0.55rem, 1.1vw, 0.72rem);
+    text-align: center;
+    padding: 7px 4px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 3px solid var(--navy);
+    border-right: 2px solid rgba(255,255,255,.2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    letter-spacing: .3px;
+    grid-row: 7;
+  }
+  .bottom-label:last-of-type { border-right: none; }
+  .bl-bot-b { background: var(--red);     grid-column: 1; }
+  .bl-bot-i { background: var(--orange);  grid-column: 3; }
+  .bl-bot-n { background: var(--dkgreen); grid-column: 5; }
+  .bl-bot-g { background: var(--blue);    grid-column: 7; }
+  .bl-bot-o { background: var(--purple);  grid-column: 9; }
+
   /* ── COPYRIGHT ── */
   .copyright {
     max-width: 900px; margin: 22px auto 0;
@@ -513,13 +542,8 @@
 <div class="card-outer" id="cardOuter"></div>
 <div class="win-banner" id="winBanner"><div class="win-text">🎉 BINGO! 🎉</div></div>
 
-<div class="score-section">
-  <div class="score-title">📊 Score Tracker</div>
-  <div class="score-row">
-    <div class="score-box"><div class="lbl">Squares Marked</div><div class="val" id="squareCount">0</div></div>
-    <div class="score-box"><div class="lbl">BINGOs</div><div class="val" id="bingoCount">0</div></div>
-    <div class="score-box"><div class="lbl">Current Score</div><div class="val score-num" id="scoreVal">0.00</div></div>
-  </div>
+<div class="score-section" id="scoreSection">
+  <div class="score-title">📊 Current Score: <span class="score-num" id="scoreVal">0.00</span></div>
 </div>
 
 <div class="rules-section">
@@ -583,12 +607,30 @@
         <span class="toggle-slider"></span>
       </div>
     </label>
+    <label class="option-row" for="optShowScore">
+      <span class="option-text">Show score
+        <span>Display the current score below the card</span>
+      </span>
+      <div class="toggle-switch">
+        <input type="checkbox" id="optShowScore" checked onchange="applyShowScore(); saveOptions()">
+        <span class="toggle-slider"></span>
+      </div>
+    </label>
     <label class="option-row" for="optHideLabels">
       <span class="option-text">Hide column names
         <span>Hides the vertical category labels on the card</span>
       </span>
       <div class="toggle-switch">
         <input type="checkbox" id="optHideLabels" onchange="applyHideLabels(); saveOptions()">
+        <span class="toggle-slider"></span>
+      </div>
+    </label>
+    <label class="option-row" for="optVerticalLabels">
+      <span class="option-text">Vertical column names
+        <span>When off, category names show as a bottom row instead</span>
+      </span>
+      <div class="toggle-switch">
+        <input type="checkbox" id="optVerticalLabels" checked onchange="applyVerticalLabels(); saveOptions()">
         <span class="toggle-slider"></span>
       </div>
     </label>
@@ -878,10 +920,16 @@ function renderCard(animate) {
     }
   }
 
-  // Label cells — one per column, span rows 2-6
+  // Label cells — vertical (span rows 2-6) always rendered; visible depends on options
   for (let col = 0; col < 5; col++) {
     const labelGridCol = col * 2 + 2;
     html += `<div class="cat-label cat-${COL_KEYS[col]}" style="grid-column:${labelGridCol};grid-row:2/7;">${cardData.categories[col]}</div>`;
+  }
+
+  // Bottom label cells — rendered always, shown/hidden via CSS class on card-outer
+  for (let col = 0; col < 5; col++) {
+    const itemGridCol = col * 2 + 1;
+    html += `<div class="bottom-label bl-bot-${COL_KEYS[col]}" style="grid-column:${itemGridCol};grid-row:7;">${cardData.categories[col]}</div>`;
   }
 
   outer.innerHTML = html;
@@ -985,9 +1033,7 @@ function updateScore() {
   const squares    = markedCells.size;
   const bingoCount = checkWin(true);
   const score      = bingoCount + squares * 0.01;
-  document.getElementById('squareCount').textContent = squares;
-  document.getElementById('bingoCount').textContent  = bingoCount;
-  document.getElementById('scoreVal').textContent    = score.toFixed(2);
+  document.getElementById('scoreVal').textContent = score.toFixed(2);
 }
 
 function toggleCell(el) {
@@ -1049,6 +1095,7 @@ function generateCard() {
   renderCard(true);
   applyFreeSpace();
   applyHideLabels();
+  applyVerticalLabels();
   saveState();
 }
 
@@ -1067,30 +1114,36 @@ function getGameMode() {
 function saveOptions() {
   try {
     localStorage.setItem('gsb_options', JSON.stringify({
-      sound:      document.getElementById('optSound').checked,
-      confirmAll: document.getElementById('optConfirmAll').checked,
-      darkMode:   document.getElementById('optDarkMode').checked,
-      hideLabels: document.getElementById('optHideLabels').checked,
-      freeSpace:  document.getElementById('optFreeSpace').checked,
-      gameMode:   getGameMode(),
+      sound:          document.getElementById('optSound').checked,
+      confirmAll:     document.getElementById('optConfirmAll').checked,
+      darkMode:       document.getElementById('optDarkMode').checked,
+      showScore:      document.getElementById('optShowScore').checked,
+      hideLabels:     document.getElementById('optHideLabels').checked,
+      verticalLabels: document.getElementById('optVerticalLabels').checked,
+      freeSpace:      document.getElementById('optFreeSpace').checked,
+      gameMode:       getGameMode(),
     }));
   } catch(e) {}
 }
 
-const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, hideLabels: false, freeSpace: false, gameMode: '1line' };
+const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, hideLabels: false, freeSpace: false, gameMode: '1line', showScore: true, verticalLabels: true };
 
 function applyOptionsToUI(o) {
-  document.getElementById('optSound').checked      = !!o.sound;
-  document.getElementById('optConfirmAll').checked = !!o.confirmAll;
-  document.getElementById('optDarkMode').checked   = !!o.darkMode;
-  document.getElementById('optHideLabels').checked = !!o.hideLabels;
-  document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
+  document.getElementById('optSound').checked          = !!o.sound;
+  document.getElementById('optConfirmAll').checked     = !!o.confirmAll;
+  document.getElementById('optDarkMode').checked       = !!o.darkMode;
+  document.getElementById('optShowScore').checked      = o.showScore !== undefined ? !!o.showScore : true;
+  document.getElementById('optHideLabels').checked     = !!o.hideLabels;
+  document.getElementById('optVerticalLabels').checked = o.verticalLabels !== undefined ? !!o.verticalLabels : true;
+  document.getElementById('optFreeSpace').checked      = !!o.freeSpace;
   const modeVal = o.gameMode || '1line';
   const modeEl  = document.querySelector(`input[name="gameMode"][value="${modeVal}"]`);
   if (modeEl) modeEl.checked = true;
   else document.getElementById('mode1line').checked = true;
   applyDarkMode();
+  applyShowScore();
   applyHideLabels();
+  applyVerticalLabels();
 }
 
 function loadOptions() {
@@ -1111,17 +1164,33 @@ function closeRevertModal() {
 function confirmRevertDefaults() {
   closeRevertModal();
   applyOptionsToUI(DEFAULTS);
-  // Re-apply free space (was possibly on, now off)
   applyFreeSpace();
+  applyShowScore();
+  applyHideLabels();
   saveOptions();
 }
 function applyDarkMode() {
   const on = document.getElementById('optDarkMode').checked;
   document.body.style.filter = on ? 'invert(1) hue-rotate(180deg)' : '';
 }
+function applyShowScore() {
+  const on = document.getElementById('optShowScore').checked;
+  document.getElementById('scoreSection').classList.toggle('hidden', !on);
+}
 function applyHideLabels() {
-  const on = document.getElementById('optHideLabels').checked;
-  document.getElementById('cardOuter').classList.toggle('labels-hidden', on);
+  const hidden   = document.getElementById('optHideLabels').checked;
+  const vertical = document.getElementById('optVerticalLabels').checked;
+  const outer    = document.getElementById('cardOuter');
+  // If labels are hidden entirely, both modes collapse
+  outer.classList.toggle('labels-hidden', hidden && vertical);
+  outer.classList.toggle('labels-bottom',  hidden ? false : !vertical);
+  // Show/hide bottom label cells
+  document.querySelectorAll('.bottom-label').forEach(el => {
+    el.style.display = (!hidden && !vertical) ? '' : 'none';
+  });
+}
+function applyVerticalLabels() {
+  applyHideLabels(); // vertical state is handled together with hide state
 }
 function applyFreeSpace() {
   const on  = document.getElementById('optFreeSpace').checked;
@@ -1167,18 +1236,19 @@ if (loadState()) {
 }
 loadOptions();
 
-// If on mobile and no saved option for hideLabels, default to hidden
-if (isMobile) {
-  try {
-    const raw = localStorage.getItem('gsb_options');
-    const saved = raw ? JSON.parse(raw) : {};
-    if (saved.hideLabels === undefined) {
-      document.getElementById('optHideLabels').checked = true;
-      saveOptions();
-    }
-  } catch(e) {}
-}
+// On first visit, set mobile-specific defaults if no saved options exist
+try {
+  const raw   = localStorage.getItem('gsb_options');
+  const saved = raw ? JSON.parse(raw) : {};
+  let changed = false;
+  if (isMobile && saved.hideLabels === undefined)     { saved.hideLabels = true;      document.getElementById('optHideLabels').checked = true;     changed = true; }
+  if (isMobile && saved.verticalLabels === undefined) { saved.verticalLabels = false; document.getElementById('optVerticalLabels').checked = false; changed = true; }
+  if (!isMobile && saved.verticalLabels === undefined){ saved.verticalLabels = true;  document.getElementById('optVerticalLabels').checked = true;  changed = true; }
+  if (saved.showScore === undefined)                  { saved.showScore = true;       document.getElementById('optShowScore').checked = true;       changed = true; }
+  if (changed) saveOptions();
+} catch(e) {}
 
+applyShowScore();
 applyFreeSpace();
 applyHideLabels();
 </script>
