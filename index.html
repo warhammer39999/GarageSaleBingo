@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Yardingo">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="initSupabase()"></script>
 <style>
   :root {
     --red:    #e63946;
@@ -1915,7 +1915,13 @@ let mpPlayerId = null;  // uuid of this player's row
 
 function initSupabase() {
   try {
-    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('Supabase ready');
+    } else {
+      // SDK not loaded yet — retry after a short delay
+      setTimeout(initSupabase, 300);
+    }
   } catch(e) {
     console.log('Supabase init failed:', e);
   }
@@ -1929,7 +1935,15 @@ function toggleMP() {
 }
 
 async function mpJoin() {
-  if (!sb) { setMpStatus('Supabase not available.', 'error'); return; }
+  // If SDK still loading, try to init one more time
+  if (!sb) {
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {}
+  }
+  if (!sb) { setMpStatus('Could not connect to Supabase. Check your internet connection and try again.', 'error'); return; }
   const name     = document.getElementById('mpNameInput').value.trim();
   const gameCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
   if (!name)     { setMpStatus('Please enter your name.', 'error'); return; }
