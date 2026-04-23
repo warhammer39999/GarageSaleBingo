@@ -514,7 +514,56 @@
   }
   .catsel-error.show { display: block; }
 
-  /* ── COPYRIGHT ── */
+  /* ── GAME CODE ── */
+  .game-code-bar {
+    max-width: 900px; margin: 22px auto 0;
+    background: white; border: 3px solid var(--navy);
+    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy);
+    padding: 14px 18px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    justify-content: center;
+  }
+  .game-code-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: .95rem; color: var(--navy); white-space: nowrap;
+  }
+  .game-code-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem; padding: 7px 12px;
+    border: 2px solid var(--navy); border-radius: 8px;
+    width: 130px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--navy); outline: none;
+    box-shadow: 2px 2px 0 var(--navy);
+  }
+  .game-code-btn {
+    font-family: 'Permanent Marker', cursive;
+    font-size: .95rem; padding: 8px 18px;
+    border: 3px solid var(--navy); border-radius: 10px;
+    cursor: pointer; box-shadow: 3px 3px 0 var(--navy);
+    transition: transform .08s, box-shadow .08s;
+    white-space: nowrap;
+  }
+  .game-code-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
+  .btn-start { background: var(--dkgreen); color: white; }
+  .btn-start:hover { background: #047a56; }
+  .btn-join  { background: var(--blue); color: white; }
+  .btn-join:hover  { background: #0d6e8f; }
+  .game-code-active {
+    font-family: 'Fredoka One', cursive;
+    font-size: .88rem; color: white;
+    background: var(--dkgreen); border-radius: 20px;
+    padding: 4px 14px; display: none; align-items: center; gap: 6px;
+  }
+  .game-code-active span { letter-spacing: 1px; }
+  .game-code-clear {
+    cursor: pointer; opacity: .7; font-size: .8rem;
+    background: none; border: none; color: white; padding: 0;
+    font-family: 'Fredoka One', cursive;
+  }
+  .game-code-clear:hover { opacity: 1; }
+  .game-code-divider {
+    width: 1px; height: 24px; background: #ddd; flex-shrink: 0;
+  }
   .copyright {
     max-width: 900px; margin: 22px auto 0;
     text-align: center; font-size: .72rem; color: #888;
@@ -595,6 +644,19 @@
 
 <div class="score-section" id="scoreSection">
   <div class="score-title">📊 Current Score: <span class="score-num" id="scoreVal">0.00</span></div>
+</div>
+
+<div class="game-code-bar">
+  <span class="game-code-label">🎮 Play with friends:</span>
+  <button class="game-code-btn btn-start" onclick="startNewGame()">Start Game</button>
+  <div class="game-code-divider"></div>
+  <span class="game-code-label">Card Code:</span>
+  <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
+  <button class="game-code-btn btn-join" onclick="joinGame()">Join Game</button>
+  <div class="game-code-active" id="gameCodeDisplay">
+    🎮 Code: <span id="gameCodeText"></span>
+    <button class="game-code-clear" onclick="clearGameCode()" title="Leave game">✕ Leave</button>
+  </div>
 </div>
 
 <div class="rules-section">
@@ -805,9 +867,12 @@ let cardData    = null;       // { categories:[5], items:[[5],[5],[5],[5],[5]] }
 const STORAGE_KEY = 'gsb_state_v2';
 function saveState() {
   try {
+    const inp = document.getElementById('gameCodeInput');
+    const code = inp ? inp.value : '';
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       cardData,
-      marked: [...markedCells]
+      marked: [...markedCells],
+      gameCode: code
     }));
   } catch(e) {}
 }
@@ -825,6 +890,12 @@ function loadState() {
     }
     cardData    = s.cardData;
     markedCells = new Set(s.marked || []);
+    // Restore game code if saved
+    if (s.gameCode) {
+      const inp = document.getElementById('gameCodeInput');
+      if (inp) inp.value = s.gameCode;
+      currentSeed = seedFromCode(s.gameCode);
+    }
     return true;
   } catch(e) { return false; }
 }
@@ -940,6 +1011,38 @@ function playBingoSound() {
   } catch(e) {}
 }
 
+/* ── SEEDED RNG (Mulberry32) ── */
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// Current game seed (null = random)
+let currentSeed = null;
+
+function seedFromCode(code) {
+  // Turn a code string into a numeric seed
+  let h = 0x811c9dc5;
+  for (let i = 0; i < code.length; i++) {
+    h ^= code.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h;
+}
+
+function seededShuffle(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(rng() * (i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
 /* ── HELPERS ── */
 function shuffle(arr) {
   const a = [...arr];
@@ -948,6 +1051,51 @@ function shuffle(arr) {
     [a[i],a[j]] = [a[j],a[i]];
   }
   return a;
+}
+
+/* ── GAME CODE ── */
+const WORD_PARTS = ['YARD','FIND','SALE','HUNT','DEAL','HAUL','PICK','GRAB','KEEP','LOOT'];
+function generateGameCode() {
+  const word = WORD_PARTS[Math.floor(Math.random() * WORD_PARTS.length)];
+  const num  = String(Math.floor(Math.random() * 9000) + 1000);
+  return `${word}-${num}`;
+}
+
+function applyGameCode(code, isJoin = false) {
+  const clean = code.trim().toUpperCase();
+  if (!clean) { currentSeed = null; return; }
+  currentSeed = seedFromCode(clean);
+  // Always put code in the input box so it's readable/shareable
+  const inp = document.getElementById('gameCodeInput');
+  if (inp) inp.value = clean;
+  // Only show the green "active" pill when joining someone else's game
+  const pill = document.getElementById('gameCodeDisplay');
+  const txt  = document.getElementById('gameCodeText');
+  if (txt)  txt.textContent = clean;
+  if (pill) pill.style.display = isJoin ? 'flex' : 'none';
+}
+
+function startNewGame() {
+  const code = generateGameCode();
+  applyGameCode(code, false);
+  document.getElementById('modalOverlay')._keepSeed = true;
+  askNewCard();
+}
+
+function joinGame() {
+  const input = document.getElementById('gameCodeInput').value.trim().toUpperCase();
+  if (!input) { alert('Please enter a game code.'); return; }
+  applyGameCode(input, true);
+  document.getElementById('modalOverlay')._keepSeed = true;
+  askNewCard();
+}
+
+function clearGameCode() {
+  currentSeed = null;
+  const pill = document.getElementById('gameCodeDisplay');
+  if (pill) pill.style.display = 'none';
+  const inp = document.getElementById('gameCodeInput');
+  if (inp) inp.value = '';
 }
 
 /* ── CARD GENERATION ── */
@@ -967,11 +1115,14 @@ function buildNewCardData() {
   const { required, hidden } = getCatPrefs();
   const available = ALL_CATS.filter(c => !hidden.includes(c) && !required.includes(c));
 
-  // Need exactly 5 columns: fill required first, then random from available
+  // Use seeded shuffle if a game code is active, else random
+  const rng      = currentSeed !== null ? mulberry32(currentSeed) : null;
+  const sfn      = (arr) => rng ? seededShuffle(arr, rng) : shuffle(arr);
+
   const needed = 5 - required.length;
-  const fillers = shuffle(available).slice(0, needed);
-  const cats = shuffle([...required, ...fillers]);
-  const items = cats.map(cat => shuffle([...CATEGORIES[cat]]).slice(0, 5));
+  const fillers = sfn(available).slice(0, needed);
+  const cats    = sfn([...required, ...fillers]);
+  const items   = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
   return { categories: cats, items };
 }
 
@@ -1282,16 +1433,25 @@ function askNewCard() {
   document.getElementById('modalOverlay').classList.add('show');
 }
 function confirmNewCard() {
+  const keepSeed = !!(document.getElementById('modalOverlay') && document.getElementById('modalOverlay')._keepSeed);
+  document.getElementById('modalOverlay')._keepSeed = false;
   closeModal();
-  generateCard();
+  generateCard(keepSeed);
 }
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
 }
-function generateCard() {
+function generateCard(keepSeed = false) {
   markedCells = new Set();
   lastBingoCount = 0;
-  cardData    = buildNewCardData();
+  // If a specific seed was pre-set (join/start game), keep it.
+  // Otherwise generate a fresh random code for this card.
+  if (!keepSeed) {
+    currentSeed = null;
+    const code = generateGameCode();
+    applyGameCode(code);
+  }
+  cardData = buildNewCardData();
   document.getElementById('winBanner').classList.remove('show');
   renderCard(true);
   applyFreeSpace();
@@ -1464,6 +1624,12 @@ try {
   applyFreeSpace();
   applyColMode();
   buildCatSelRows();
+
+  // Make sure a game code is always visible after load
+  // (generateCard sets one, but loadState/renderCard path doesn't)
+  if (!document.getElementById('gameCodeInput').value) {
+    applyGameCode(generateGameCode(), false);
+  }
 } catch(e) {
   // If anything in init fails, nuke localStorage and start fresh
   console.error('Init error, resetting:', e);
