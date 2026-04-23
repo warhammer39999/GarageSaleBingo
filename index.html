@@ -523,47 +523,105 @@
     display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
     justify-content: center;
   }
-  .game-code-label {
-    font-family: 'Fredoka One', cursive;
-    font-size: .95rem; color: var(--navy); white-space: nowrap;
+  /* ── GAME CODE ── */
+  .game-code-bar {
+    max-width: 900px; margin: 22px auto 0;
+    background: white; border: 3px solid var(--navy);
+    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy);
+    padding: 16px 20px;
+  }
+  .game-code-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem; color: var(--navy); margin-bottom: 4px;
+  }
+  .game-code-hint {
+    font-size: .78rem; font-weight: 600; color: #888;
+    font-style: italic; margin-bottom: 12px;
+  }
+  .game-code-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 12px;
   }
   .game-code-input {
     font-family: 'Fredoka One', cursive;
-    font-size: 1rem; padding: 7px 12px;
-    border: 2px solid var(--navy); border-radius: 8px;
-    width: 130px; text-transform: uppercase; letter-spacing: 1px;
+    font-size: 1.1rem; padding: 8px 14px;
+    border: 3px solid var(--navy); border-radius: 8px;
+    width: 150px; text-transform: uppercase; letter-spacing: 2px;
     color: var(--navy); outline: none;
-    box-shadow: 2px 2px 0 var(--navy);
+    box-shadow: 3px 3px 0 var(--navy);
+    background: var(--cream);
   }
-  .game-code-btn {
-    font-family: 'Permanent Marker', cursive;
-    font-size: .95rem; padding: 8px 18px;
-    border: 3px solid var(--navy); border-radius: 10px;
-    cursor: pointer; box-shadow: 3px 3px 0 var(--navy);
+  .game-code-copy {
+    font-family: 'Fredoka One', cursive;
+    font-size: .9rem; padding: 8px 14px;
+    border: 2px solid var(--navy); border-radius: 8px;
+    cursor: pointer; background: var(--cream); color: var(--navy);
+    box-shadow: 2px 2px 0 var(--navy);
     transition: transform .08s, box-shadow .08s;
     white-space: nowrap;
   }
-  .game-code-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
-  .btn-start { background: var(--dkgreen); color: white; }
-  .btn-start:hover { background: #047a56; }
-  .btn-join  { background: var(--blue); color: white; }
-  .btn-join:hover  { background: #0d6e8f; }
-  .game-code-active {
-    font-family: 'Fredoka One', cursive;
-    font-size: .88rem; color: white;
-    background: var(--dkgreen); border-radius: 20px;
-    padding: 4px 14px; display: none; align-items: center; gap: 6px;
-  }
-  .game-code-active span { letter-spacing: 1px; }
-  .game-code-clear {
-    cursor: pointer; opacity: .7; font-size: .8rem;
-    background: none; border: none; color: white; padding: 0;
-    font-family: 'Fredoka One', cursive;
-  }
-  .game-code-clear:hover { opacity: 1; }
+  .game-code-copy:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--navy); }
+  .game-code-copy:hover { background: #fff3cc; }
   .game-code-divider {
-    width: 1px; height: 24px; background: #ddd; flex-shrink: 0;
+    border: none; border-top: 1px dashed #ddd; margin: 10px 0;
   }
+  .game-code-join-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: .88rem; color: #888; margin-bottom: 8px;
+  }
+  .game-code-join-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .game-code-join-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem; padding: 7px 12px;
+    border: 2px solid #bbb; border-radius: 8px;
+    width: 140px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--navy); outline: none;
+  }
+  .game-code-join-input:focus { border-color: var(--navy); }
+  .btn-join {
+    font-family: 'Permanent Marker', cursive;
+    font-size: .95rem; padding: 8px 18px;
+    background: var(--blue); color: white;
+    border: 3px solid var(--navy); border-radius: 10px;
+    cursor: pointer; box-shadow: 3px 3px 0 var(--navy);
+    transition: transform .08s, box-shadow .08s; white-space: nowrap;
+  }
+  .btn-join:hover { background: #0d6e8f; }
+  .btn-join:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
+  .game-code-joined {
+    display: none; margin-top: 8px;
+    font-family: 'Fredoka One', cursive; font-size: .85rem;
+    color: white; background: var(--dkgreen);
+    border-radius: 20px; padding: 4px 14px;
+    align-items: center; gap: 8px; width: fit-content;
+  }
+  .game-code-leave {
+    cursor: pointer; background: none; border: none;
+    color: white; font-family: 'Fredoka One', cursive;
+    font-size: .8rem; opacity: .8; padding: 0;
+  }
+  .game-code-leave:hover { opacity: 1; }
+
+  /* ── LARGE TEXT MODE ── */
+  body.large-text .bingo-cell {
+    font-size: clamp(0.88rem, 2.4vw, 1.1rem);
+    min-height: 88px;
+    max-height: 176px;
+  }
+  body.large-text .cat-label {
+    font-size: clamp(0.7rem, 1.3vw, 0.95rem);
+  }
+  body.large-text .bottom-label {
+    font-size: clamp(0.72rem, 1.5vw, 0.92rem);
+    min-height: 42px;
+    max-height: 84px;
+  }
+  body.large-text .bingo-cell.free-space {
+    font-size: clamp(0.75rem, 1.5vw, 0.92rem) !important;
+  }
+
   .copyright {
     max-width: 900px; margin: 22px auto 0;
     text-align: center; font-size: .72rem; color: #888;
@@ -647,15 +705,21 @@
 </div>
 
 <div class="game-code-bar">
-  <span class="game-code-label">🎮 Play with friends:</span>
-  <button class="game-code-btn btn-start" onclick="startNewGame()">Start Game</button>
-  <div class="game-code-divider"></div>
-  <span class="game-code-label">Card Code:</span>
-  <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
-  <button class="game-code-btn btn-join" onclick="joinGame()">Join Game</button>
-  <div class="game-code-active" id="gameCodeDisplay">
-    🎮 Code: <span id="gameCodeText"></span>
-    <button class="game-code-clear" onclick="clearGameCode()" title="Leave game">✕ Leave</button>
+  <div class="game-code-title">🎮 Game Code</div>
+  <div class="game-code-hint">Share this code with friends so they can play the same card.</div>
+  <div class="game-code-row">
+    <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9" readonly>
+    <button class="game-code-copy" onclick="copyGameCode()">📋 Copy</button>
+  </div>
+  <hr class="game-code-divider">
+  <div class="game-code-join-label">Already have a code? Enter it below to play the same card as a friend.</div>
+  <div class="game-code-join-row">
+    <input class="game-code-join-input" id="gameCodeJoinInput" placeholder="YARD-1234" maxlength="9">
+    <button class="btn-join" onclick="joinGame()">Join</button>
+  </div>
+  <div class="game-code-joined" id="gameCodeDisplay">
+    ✓ Joined: <span id="gameCodeText"></span>
+    <button class="game-code-leave" onclick="clearGameCode()">✕ Leave</button>
   </div>
 </div>
 
@@ -693,6 +757,15 @@
     <span class="options-toggle" id="optionsToggle">▼ Show</span>
   </div>
   <div class="options-body collapsed" id="optionsBody">
+    <label class="option-row" for="optLargeText">
+      <span class="option-text">Large text
+        <span>Increases text size in the card squares and column labels</span>
+      </span>
+      <div class="toggle-switch">
+        <input type="checkbox" id="optLargeText" onchange="applyLargeText(); saveOptions()">
+        <span class="toggle-slider"></span>
+      </div>
+    </label>
     <label class="option-row" for="optSound">
       <span class="option-text">Sound Effects
         <span>Play a sound when you mark a square or get a BINGO</span>
@@ -914,7 +987,7 @@ function drawVenmoQR() {
       size: 100,
       backgroundAlpha: 1,
       foreground: '#073b4c',
-      background: '#fffbf0',
+      background: '#ffffff',
       level: 'M'
     });
   }
@@ -1075,15 +1148,20 @@ function applyGameCode(code, isJoin = false) {
   if (pill) pill.style.display = isJoin ? 'flex' : 'none';
 }
 
-function startNewGame() {
-  const code = generateGameCode();
-  applyGameCode(code, false);
-  document.getElementById('modalOverlay')._keepSeed = true;
-  askNewCard();
+function copyGameCode() {
+  const inp = document.getElementById('gameCodeInput');
+  if (!inp || !inp.value) return;
+  navigator.clipboard.writeText(inp.value).then(() => {
+    const btn = document.querySelector('.game-code-copy');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 1500); }
+  }).catch(() => {
+    // Fallback for browsers without clipboard API
+    inp.select(); document.execCommand('copy');
+  });
 }
 
 function joinGame() {
-  const input = document.getElementById('gameCodeInput').value.trim().toUpperCase();
+  const input = document.getElementById('gameCodeJoinInput').value.trim().toUpperCase();
   if (!input) { alert('Please enter a game code.'); return; }
   applyGameCode(input, true);
   document.getElementById('modalOverlay')._keepSeed = true;
@@ -1094,8 +1172,10 @@ function clearGameCode() {
   currentSeed = null;
   const pill = document.getElementById('gameCodeDisplay');
   if (pill) pill.style.display = 'none';
-  const inp = document.getElementById('gameCodeInput');
-  if (inp) inp.value = '';
+  const joinInp = document.getElementById('gameCodeJoinInput');
+  if (joinInp) joinInp.value = '';
+  // Regenerate a fresh code
+  applyGameCode(generateGameCode(), false);
 }
 
 /* ── CARD GENERATION ── */
@@ -1477,6 +1557,7 @@ function saveOptions() {
       sound:      document.getElementById('optSound').checked,
       confirmAll: document.getElementById('optConfirmAll').checked,
       darkMode:   document.getElementById('optDarkMode').checked,
+      largeText:  document.getElementById('optLargeText').checked,
       showScore:  document.getElementById('optShowScore').checked,
       freeSpace:  document.getElementById('optFreeSpace').checked,
       gameMode:   getGameMode(),
@@ -1485,7 +1566,7 @@ function saveOptions() {
   } catch(e) {}
 }
 
-const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, freeSpace: false, gameMode: '1line', showScore: true, colMode: 'horizontal' };
+const DEFAULTS = { sound: false, confirmAll: false, darkMode: false, largeText: false, freeSpace: false, gameMode: '1line', showScore: true, colMode: 'horizontal' };
 
 function getColMode() {
   const r = document.querySelector('input[name="colMode"]:checked');
@@ -1496,6 +1577,7 @@ function applyOptionsToUI(o) {
   document.getElementById('optSound').checked      = !!o.sound;
   document.getElementById('optConfirmAll').checked = !!o.confirmAll;
   document.getElementById('optDarkMode').checked   = !!o.darkMode;
+  document.getElementById('optLargeText').checked  = !!o.largeText;
   document.getElementById('optShowScore').checked  = o.showScore !== undefined ? !!o.showScore : true;
   document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
   const modeVal = o.gameMode || '1line';
@@ -1507,6 +1589,7 @@ function applyOptionsToUI(o) {
   if (colEl) colEl.checked = true;
   else document.getElementById('optColVertical').checked = true;
   applyDarkMode();
+  applyLargeText();
   applyShowScore();
   applyColMode();
 }
@@ -1533,6 +1616,10 @@ function confirmRevertDefaults() {
   applyShowScore();
   applyColMode();
   saveOptions();
+}
+function applyLargeText() {
+  const on = document.getElementById('optLargeText').checked;
+  document.body.classList.toggle('large-text', on);
 }
 function applyDarkMode() {
   const on = document.getElementById('optDarkMode').checked;
