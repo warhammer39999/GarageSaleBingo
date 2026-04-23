@@ -690,17 +690,20 @@
   .mp-toggle { font-family:'Fredoka One',cursive; color:rgba(255,255,255,.7); font-size:.9rem; }
   .mp-body { padding: 16px 20px; }
   .mp-body.collapsed { display: none; }
-
-  .mp-name-row {
-    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;
+  .mp-hint {
+    font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px; line-height:1.5;
   }
-  .mp-name-label { font-family:'Fredoka One',cursive; font-size:.95rem; color:var(--navy); white-space:nowrap; }
+  .mp-name-row {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;
+  }
   .mp-name-input {
     font-family:'Nunito',sans-serif; font-weight:700; font-size:.95rem;
     padding: 8px 12px; border: 2px solid var(--navy); border-radius: 8px;
-    outline: none; flex: 1; min-width: 140px; color: var(--navy);
+    outline: none; flex: 1; min-width: 120px; color: var(--navy);
   }
-  .mp-name-input:focus { border-color: var(--blue); }
+  .mp-code-wrap {
+    display: flex; align-items: center; gap: 4px;
+  }
   .mp-join-btn {
     font-family:'Permanent Marker',cursive; font-size:.95rem;
     padding: 8px 18px; background: var(--dkgreen); color: white;
@@ -711,45 +714,40 @@
   .mp-join-btn:hover { background: #047a56; }
   .mp-join-btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--navy); }
   .mp-leave-btn {
-    font-family:'Fredoka One',cursive; font-size:.85rem;
-    padding: 6px 14px; background: white; color: var(--red);
+    font-family:'Fredoka One',cursive; font-size:.82rem;
+    padding: 5px 12px; background: white; color: var(--red);
     border: 2px solid var(--red); border-radius: 8px; cursor: pointer;
-    box-shadow: 2px 2px 0 var(--red);
+    box-shadow: 2px 2px 0 var(--red); white-space: nowrap;
   }
   .mp-leave-btn:hover { background: #fff0f0; }
-
-  .mp-status {
-    font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px;
-  }
-  .mp-status.connected { color: var(--dkgreen); font-style:normal; }
+  .mp-status { font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:8px; }
+  .mp-status.connected { color: var(--dkgreen); font-style:normal; font-size:.82rem; }
   .mp-status.error { color: var(--red); font-style:normal; }
-
-  /* Scoreboard */
-  .mp-scoreboard {
-    display: none;
+  .mp-active-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
   }
-  .mp-scoreboard.visible { display: block; }
+  .mp-code-pill {
+    font-family:'Fredoka One',cursive; font-size:.85rem; color: var(--navy);
+    background: var(--cream); border: 2px solid var(--navy);
+    border-radius: 20px; padding: 3px 12px; letter-spacing: 1px;
+  }
   .mp-scoreboard-title {
     font-family:'Fredoka One',cursive; font-size:1rem; color:var(--navy); margin-bottom:8px;
   }
-  .mp-players {
-    display: flex; flex-direction: column; gap: 6px;
-  }
+  .mp-players { display: flex; flex-direction: column; gap: 6px; }
   .mp-player-row {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 12px; background: var(--cream);
-    border: 2px solid #e0e0e0; border-radius: 10px;
-    transition: border-color .2s;
+    border: 2px solid #e0e0e0; border-radius: 10px; transition: border-color .2s;
   }
   .mp-player-row.me { border-color: var(--blue); background: #f0f9ff; }
-  .mp-player-row.bingo-flash { border-color: var(--red); animation: bingoFlash .6s ease 3; }
-  @keyframes bingoFlash { 0%,100%{background:var(--cream)} 50%{background:#fff0f0} }
+  .mp-player-row.bingo-flash { animation: bingoFlash .6s ease 3; }
+  @keyframes bingoFlash { 0%,100%{background:var(--cream)} 50%{background:#fff5b0} }
   .mp-player-name { font-weight:800; color:var(--navy); flex:1; font-size:.88rem; }
   .mp-player-score { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--red); }
   .mp-player-bingos { font-size:.75rem; color:#888; }
   .mp-player-you { font-size:.7rem; color:var(--blue); font-weight:800; }
-
-  /* Bingo notification toast */
   .bingo-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
     background: var(--navy); color: var(--yellow);
@@ -757,8 +755,7 @@
     padding: 12px 24px; border-radius: 20px;
     box-shadow: 0 4px 16px rgba(0,0,0,.3);
     z-index: 9999; opacity: 0; pointer-events: none;
-    transition: opacity .3s;
-    white-space: nowrap;
+    transition: opacity .3s; white-space: nowrap;
   }
   .bingo-toast.show { opacity: 1; }
 </style>
@@ -795,53 +792,48 @@
   <div class="score-title">📊 Current Score: <span class="score-num" id="scoreVal">0.00</span></div>
 </div>
 
-<div class="game-code-bar">
-  <div class="game-code-title">🎮 Game Code</div>
-  <div class="game-code-hint">Share this code with friends so they can play the same card.</div>
-  <div class="game-code-row">
-    <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9" readonly>
-    <button class="game-code-copy" onclick="copyGameCode()">📋 Copy</button>
-  </div>
-  <hr class="game-code-divider">
-  <div class="game-code-join-label">Already have a code? Enter it below to play the same card as a friend.</div>
-  <div class="game-code-join-row">
-    <input class="game-code-join-input" id="gameCodeJoinInput" placeholder="YARD-1234" maxlength="9">
-    <button class="btn-join" onclick="joinGame()">Join</button>
-  </div>
-  <div class="game-code-joined" id="gameCodeDisplay">
-    ✓ Joined: <span id="gameCodeText"></span>
-    <button class="game-code-leave" onclick="clearGameCode()">✕ Leave</button>
-  </div>
-
-<div class="rules-section">
-<div class="bingo-toast" id="bingoToast"></div>
-
 <div class="mp-section">
   <div class="mp-header" onclick="toggleMP()">
-    <h2>👥 Live Multiplayer</h2>
+    <h2>👥 Play with Friends</h2>
     <span class="mp-toggle" id="mpToggle">▼ Show</span>
   </div>
   <div class="mp-body collapsed" id="mpBody">
+
+    <!-- Join area (shown before connected) -->
     <div id="mpJoinArea">
+      <div class="mp-hint">Enter your name and a game code to play with friends in real time. Share your code so others can join the same card.</div>
       <div class="mp-name-row">
-        <span class="mp-name-label">Your name:</span>
-        <input class="mp-name-input" id="mpNameInput" placeholder="Enter your name" maxlength="20">
-        <button class="mp-join-btn" onclick="mpJoin()">Join Live Game</button>
+        <input class="mp-name-input" id="mpNameInput" placeholder="Your name" maxlength="20">
+        <div class="mp-code-wrap">
+          <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
+          <button class="game-code-copy" onclick="copyGameCode()" title="Copy code">📋</button>
+        </div>
+        <button class="mp-join-btn" onclick="mpJoin()">Join Game</button>
       </div>
-      <div class="mp-status" id="mpStatus">Enter your name and join to see live scores with friends.</div>
+      <div class="mp-status" id="mpStatus">Playing solo — join to share live scores with friends.</div>
     </div>
+
+    <!-- Active area (shown when connected) -->
     <div id="mpActiveArea" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div class="mp-status connected" id="mpActiveStatus"></div>
-        <button class="mp-leave-btn" onclick="mpLeave()">Leave Game</button>
+      <div class="mp-active-header">
+        <div id="mpActiveStatus" class="mp-status connected"></div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="mp-code-pill">🎮 <strong id="mpActiveCode"></strong></span>
+          <button class="game-code-copy" onclick="copyGameCode()" title="Copy code">📋 Copy</button>
+          <button class="mp-leave-btn" onclick="mpLeave()">Leave</button>
+        </div>
       </div>
-      <div class="mp-scoreboard visible">
-        <div class="mp-scoreboard-title">🏆 Live Scores</div>
-        <div class="mp-players" id="mpPlayers"></div>
-      </div>
+      <div class="mp-scoreboard-title">🏆 Live Scores</div>
+      <div class="mp-players" id="mpPlayers"></div>
     </div>
+
   </div>
 </div>
+
+<!-- Bingo toast notification -->
+<div class="bingo-toast" id="bingoToast"></div>
+
+<div class="rules-section">
   <div class="rules-header" onclick="toggleRules()">
     <h2>📋 Official Rules</h2>
     <span class="rules-toggle" id="rulesToggle">▼ Show</span>
@@ -1267,14 +1259,16 @@ function applyGameCode(code, isJoin = false) {
 }
 
 function copyGameCode() {
-  const inp = document.getElementById('gameCodeInput');
-  if (!inp || !inp.value) return;
-  navigator.clipboard.writeText(inp.value).then(() => {
-    const btn = document.querySelector('.game-code-copy');
-    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 1500); }
+  const code = document.getElementById('gameCodeInput').value;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    document.querySelectorAll('.game-code-copy').forEach(btn => {
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = '📋 Copy', 1500);
+    });
   }).catch(() => {
-    // Fallback for browsers without clipboard API
-    inp.select(); document.execCommand('copy');
+    const inp = document.getElementById('gameCodeInput');
+    if (inp) { inp.removeAttribute('readonly'); inp.select(); document.execCommand('copy'); inp.setAttribute('readonly',''); }
   });
 }
 
@@ -1943,11 +1937,12 @@ async function mpJoin() {
       }
     } catch(e) {}
   }
-  if (!sb) { setMpStatus('Could not connect to Supabase. Check your internet connection and try again.', 'error'); return; }
+  if (!sb) { setMpStatus('Could not connect. Check your internet connection and try again.', 'error'); return; }
+
   const name     = document.getElementById('mpNameInput').value.trim();
   const gameCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
   if (!name)     { setMpStatus('Please enter your name.', 'error'); return; }
-  if (!gameCode) { setMpStatus('Generate or join a card first.', 'error'); return; }
+  if (!gameCode) { setMpStatus('A card code is required — tap New Card first.', 'error'); return; }
 
   setMpStatus('Connecting...', '');
 
@@ -1955,10 +1950,8 @@ async function mpJoin() {
     // Upsert game session
     await sb.from('game_sessions').upsert({ code: gameCode }, { onConflict: 'code' });
 
-    // Calculate current score
-    const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-
     // Insert player row
+    const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
     const { data, error } = await sb.from('game_players').insert({
       game_code:   gameCode,
       player_name: name,
@@ -1971,19 +1964,19 @@ async function mpJoin() {
     mpPlayerId = data.id;
     mpPlayer   = { id: data.id, name, game_code: gameCode };
 
-    // Store name for future sessions
     try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
 
-    // Subscribe to realtime updates
+    // Subscribe realtime
     mpSubscribe(gameCode);
 
     // Show active area
     document.getElementById('mpJoinArea').style.display   = 'none';
     document.getElementById('mpActiveArea').style.display = 'block';
-    document.getElementById('mpActiveStatus').textContent = `✓ Playing as "${name}" in game ${gameCode}`;
+    document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
+    document.getElementById('mpActiveCode').textContent    = gameCode;
 
     // Load initial scores
-    mpLoadPlayers(gameCode);
+    await mpLoadPlayers(gameCode);
 
   } catch(e) {
     setMpStatus('Connection failed: ' + e.message, 'error');
@@ -1991,22 +1984,30 @@ async function mpJoin() {
 }
 
 function mpSubscribe(gameCode) {
-  if (mpChannel) sb.removeChannel(mpChannel);
+  if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
 
-  mpChannel = sb.channel(`game:${gameCode}`)
-    .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'game_players', filter: `game_code=eq.${gameCode}` },
-      payload => {
-        mpLoadPlayers(gameCode);
-        // Check if someone called Bingo
-        if (payload.eventType === 'UPDATE' && payload.new.bingos > (payload.old.bingos || 0)) {
-          if (payload.new.id !== mpPlayerId) {
-            showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
-          }
-        }
-      }
-    )
-    .subscribe();
+  mpChannel = sb.channel(`game-${gameCode}`, {
+    config: { broadcast: { self: true } }
+  })
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table:  'game_players'
+  }, payload => {
+    // Filter client-side to this game code
+    const row = payload.new || payload.old;
+    if (!row || row.game_code !== gameCode) return;
+    mpLoadPlayers(gameCode);
+    // Bingo notification
+    if (payload.eventType === 'UPDATE' &&
+        payload.new.bingos > (payload.old.bingos || 0) &&
+        payload.new.id !== mpPlayerId) {
+      showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
+    }
+  })
+  .subscribe(status => {
+    console.log('Realtime status:', status);
+  });
 }
 
 async function mpLoadPlayers(gameCode) {
@@ -2062,7 +2063,7 @@ async function mpLeave() {
   document.getElementById('mpJoinArea').style.display   = 'block';
   document.getElementById('mpActiveArea').style.display = 'none';
   document.getElementById('mpPlayers').innerHTML = '';
-  setMpStatus('Enter your name and join to see live scores with friends.', '');
+  setMpStatus('Playing solo — join to share live scores with friends.', '');
 }
 
 function setMpStatus(msg, type) {
