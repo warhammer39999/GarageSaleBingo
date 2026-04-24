@@ -1555,7 +1555,8 @@ function updateScore() {
   const bingoCount = checkWin(true);
   const score      = bingoCount + squares * 0.01;
   document.getElementById('scoreVal').textContent = score.toFixed(2);
-  mpUpdateScore(); // sync to Supabase if in a live game
+  // Pass score directly so we don't have to re-read the DOM
+  mpUpdateScore(score, bingoCount);
 }
 
 function toggleCell(el) {
@@ -1983,31 +1984,48 @@ async function mpJoin() {
   }
 }
 
+let mpPollInterval = null;
+
 function mpSubscribe(gameCode) {
   if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
+  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
 
-  mpChannel = sb.channel(`game-${gameCode}`, {
-    config: { broadcast: { self: true } }
-  })
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table:  'game_players'
-  }, payload => {
-    // Filter client-side to this game code
-    const row = payload.new || payload.old;
-    if (!row || row.game_code !== gameCode) return;
-    mpLoadPlayers(gameCode);
-    // Bingo notification
-    if (payload.eventType === 'UPDATE' &&
-        payload.new.bingos > (payload.old.bingos || 0) &&
-        payload.new.id !== mpPlayerId) {
-      showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
-    }
-  })
-  .subscribe(status => {
-    console.log('Realtime status:', status);
-  });
+  mpChannel = sb.channel(`game-${gameCode}`)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table:  'game_players'
+    }, payload => {
+      if (payload.new && payload.new.game_code === gameCode) {
+        mpLoadPlayers(gameCode);
+      }
+    })
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table:  'game_players'
+    }, payload => {
+      if (payload.new && payload.new.game_code === gameCode) {
+        mpLoadPlayers(gameCode);
+        if (payload.new.bingos > (payload.old.bingos || 0) &&
+            payload.new.id !== mpPlayerId) {
+          showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
+        }
+      }
+    })
+    .on('postgres_changes', {
+      event: 'DELETE',
+      schema: 'public',
+      table:  'game_players'
+    }, () => {
+      mpLoadPlayers(gameCode);
+    })
+    .subscribe(status => {
+      console.log('Realtime status:', status);
+    });
+
+  // Polling fallback — refreshes scoreboard every 5s in case realtime misses events
+  mpPollInterval = setInterval(() => mpLoadPlayers(gameCode), 5000);
 }
 
 async function mpLoadPlayers(gameCode) {
@@ -2039,16 +2057,15 @@ function renderMpPlayers(players) {
   }).join('');
 }
 
-async function mpUpdateScore() {
+async function mpUpdateScore(score, bingoCount) {
   if (!sb || !mpPlayerId) return;
-  const score   = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-  const bingoCount = (document.getElementById('bingoCount') ? 
-    parseInt(document.getElementById('bingoCount').textContent) : 0) ||
-    (score >= 1 ? Math.floor(score) : 0);
-
+  if (score === undefined) {
+    score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+    bingoCount = Math.floor(score);
+  }
   await sb.from('game_players').update({
     score:      score,
-    bingos:     bingoCount,
+    bingos:     bingoCount || 0,
     updated_at: new Date().toISOString()
   }).eq('id', mpPlayerId);
 }
@@ -2058,6 +2075,7 @@ async function mpLeave() {
     await sb.from('game_players').delete().eq('id', mpPlayerId);
   }
   if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
+  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
   mpPlayerId = null;
   mpPlayer   = null;
   document.getElementById('mpJoinArea').style.display   = 'block';
