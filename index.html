@@ -801,16 +801,16 @@
 
     <!-- Join area (shown before connected) -->
     <div id="mpJoinArea">
-      <div class="mp-hint">Enter your name and a game code to play with friends in real time. Share your code so others can join the same card.</div>
+      <div class="mp-hint">Enter your name and your room code to play with friends in real time. Share your room code so others can join.</div>
       <div class="mp-name-row">
         <input class="mp-name-input" id="mpNameInput" placeholder="Your name" maxlength="20">
         <div class="mp-code-wrap">
           <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
-          <button class="game-code-copy" onclick="copyGameCode()" title="Copy code">📋</button>
+          <button class="game-code-copy" onclick="copyGameCode()" title="Copy room code">📋</button>
         </div>
-        <button class="mp-join-btn" onclick="mpJoin()">Join Game</button>
+        <button class="mp-join-btn" onclick="mpJoin()">Join Room</button>
       </div>
-      <div class="mp-status" id="mpStatus">Playing solo — join to share live scores with friends.</div>
+      <div class="mp-status" id="mpStatus">Playing solo — join a room to share live scores with friends.</div>
     </div>
 
     <!-- Active area (shown when connected) -->
@@ -1238,6 +1238,22 @@ function shuffle(arr) {
 
 /* ── GAME CODE ── */
 const WORD_PARTS = ['YARD','FIND','SALE','HUNT','DEAL','HAUL','PICK','GRAB','KEEP','LOOT'];
+const ROOM_CODE_KEY = 'gsb_room_code';
+
+function getOrCreateRoomCode() {
+  try {
+    const saved = localStorage.getItem(ROOM_CODE_KEY);
+    if (saved) return saved;
+  } catch(e) {}
+  const code = generateGameCode();
+  saveRoomCode(code);
+  return code;
+}
+
+function saveRoomCode(code) {
+  try { localStorage.setItem(ROOM_CODE_KEY, code); } catch(e) {}
+}
+
 function generateGameCode() {
   const word = WORD_PARTS[Math.floor(Math.random() * WORD_PARTS.length)];
   const num  = String(Math.floor(Math.random() * 9000) + 1000);
@@ -1248,10 +1264,11 @@ function applyGameCode(code, isJoin = false) {
   const clean = code.trim().toUpperCase();
   if (!clean) { currentSeed = null; return; }
   currentSeed = seedFromCode(clean);
-  // Always put code in the input box so it's readable/shareable
   const inp = document.getElementById('gameCodeInput');
   if (inp) inp.value = clean;
-  // Only show the green "active" pill when joining someone else's game
+  // Only save to persistent room code if this is OUR code (not joining someone else's)
+  if (!isJoin) saveRoomCode(clean);
+  // Show joined pill only when joining someone else's game
   const pill = document.getElementById('gameCodeDisplay');
   const txt  = document.getElementById('gameCodeText');
   if (txt)  txt.textContent = clean;
@@ -1638,12 +1655,13 @@ function closeModal() {
 function generateCard(keepSeed = false) {
   markedCells = new Set();
   lastBingoCount = 0;
-  // If a specific seed was pre-set (join/start game), keep it.
-  // Otherwise generate a fresh random code for this card.
+  // Always use the persistent room code — never change it on new card
+  const roomCode = getOrCreateRoomCode();
+  applyGameCode(roomCode, false);
+  // For join/start game flows, keepSeed uses whatever was pre-set
+  // For normal new card, seed from the persistent room code
   if (!keepSeed) {
-    currentSeed = null;
-    const code = generateGameCode();
-    applyGameCode(code);
+    currentSeed = seedFromCode(roomCode);
   }
   cardData = buildNewCardData();
   document.getElementById('winBanner').classList.remove('show');
@@ -1836,11 +1854,11 @@ try {
   applyColMode();
   buildCatSelRows();
 
-  // Make sure a game code is always visible after load
-  // (generateCard sets one, but loadState/renderCard path doesn't)
-  if (!document.getElementById('gameCodeInput').value) {
-    applyGameCode(generateGameCode(), false);
-  }
+  // Make sure room code is always visible — restore or create once
+  const roomCode = getOrCreateRoomCode();
+  const codeInp = document.getElementById('gameCodeInput');
+  if (codeInp && !codeInp.value) codeInp.value = roomCode;
+  currentSeed = seedFromCode(roomCode);
 } catch(e) {
   // If anything in init fails, nuke localStorage and start fresh
   console.error('Init error, resetting:', e);
