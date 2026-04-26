@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Yardingo">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="initSupabase()"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --red:    #e63946;
@@ -873,6 +873,7 @@
         <li>The game ends at the <strong>end of the excursion</strong>, not when a Bingo is announced.</li>
         <li>For each <strong>BINGO</strong>: +1 point</li>
         <li>For each <strong>filled-in square</strong>: +0.01 point</li>
+        <li>For each <strong>4-in-a-row</strong> (tiebreaker, not part of a BINGO): +0.001 point</li>
         <li>Scores range from <strong>0.01 to 17.25</strong> — winning scores are often in the <strong>0.09–2.13</strong> range.</li>
       </ul>
     </div>
@@ -1029,21 +1030,31 @@
 
 
 <script>
+/* ── SUPABASE CONFIG (defined first so initSupabase can reference them) ── */
+const SUPABASE_URL = 'https://worjugymwmxjgoeysccm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvcmp1Z3ltd214amdvZXlzY2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5ODE5MDIsImV4cCI6MjA5MjU1NzkwMn0.pCF_5O4sLGBI6Nd2I7-uO5myvR7b3d9OkDEdAH2R3yI';
+
+// Multiplayer state — declared here so initSupabase can reference them immediately
+let sb             = null;
+let mpPlayer       = null;
+let mpChannel      = null;
+let mpPlayerId     = null;
+
 /* ── DATA ── */
 const CATEGORIES = {
-  "Sale Specific":      ["Helium Balloon","10+ signs for the same sale","Pink Lemonade Stand","Grilled Food (at sale)","Rummage Sale","Sunday Signage","Two Signs on One Stick","Cardboard Sign","Sign Says Distance in Miles","Meme on Sign (Trump, Poop Emoji, etc.)","Multi-Family Garage Sale","Estate Sale","Brick Fascade","Vintage Car for Sale","Boat for Sale","Sale continues in house","Lemonade Stand (kid < 5 years old)","Sale on Driveway, Lawn, & Garage","Garage Sale sign in yard"],
-  "Characters (Can be images)":["Rubeus Hagrid (Harry Potter)","Starscream (Transformers)","Brainy Smurf","Luigi (Super Mario Bros)","Patrick Star (Spongebob)","Spiderman","Dora the Explorer","Batman & Robin (both)","Thomas the Train","Tigger (Winnie the Poo)","Mickey Mouse","Cabbage Patch Kid","Tinkerbell","Bugs Bunny","Bart Simpson","Hello Kitty","Power Ranger (Blue)","the Lorax (Dr. Seuss)","Grover (Sesame Street)"],
-  "Toys":               ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz"],
-  "Games":              ["Trivial Pursuit","Rummikub","Apples 2 Apples","800+ Piece Puzzle","Cranium","Magic Cards or Pokemon","SORRY!","$20+ Board Game","LIFE","Board Game in Original Shrinkwrap","Poker Chips","Monopoly (not themed)","Monopoly (themed)","Risk (themed)","Rubiks Cube","DVD or VHS based game","Cards Against Humanity","Game dated before 1990","Digital version of Board Game"],
-  "Shoppers":           ["Manta","The Kraken","High School / College Classmate","Recidivist (Seen at other sale earlier today)","Barnacle Bob","Haggler in Luxury Car","Haggler on item <=$1","Family of 5+","Mixed Race Couple","Person over 6ft 2in","Sunvisor or Fanny Pack Wearer","Shopper eating (food not from this sale)","Has Change Purse or Money Changer","Shopper with Headphones","Non-English Speaker","Won't Leave the Car","Wearing Shorts & Hoodie","Grandparent & Grandkid","Your Neighbor (name known in advance)"],
-  "Kitchen":            ["Martini Glass","Tupper Ware","Travel Mug","Chaffing Dish","Kitchen Sink","German Beer Stein","Wine Stopper","Kiss the Cook item","Cheese Grater","Cast Iron Skillet","Knife Block","Plastic Cereal Cannisters","Stainless Steel Trashcan","Salad Spinner","Pizza Stone","Strainer","Ice Cream Scoop","Pot Holder","Melon Baller or Potato Peeler"],
-  "Appliances":         ["George Foreman Grill","Popcorn Popper","Bread Machine","Mixer","Coffee Machine","Crock Pot","Toaster Oven","Waffle Iron","Foot Spa","Mini Fridge","Chest Freezer","Microwave (Countertop)","Magic Bullet","Rice Cooker","Sewing Machine","Juicer","Pancake Griddle","Pressure Cooker","Deep Fryer / Air Fryer"],
-  "Clothes":            ["High-Heeled Shoes (Red)","Fur Coat","Baseball Cap","<$1 Sunglasses","Woman's Hat","Socks","Bra","Leather Jacket","Adult PJs with Cartoon Character","Fanny Pack","Patagonia Jacket","Converse Sneakers","Tie with Words, Scene, or Character","Wig","Lady's Hat (not Winter)","Necklace (Blue)","Bogs (Rain Boots)","LuLaRoe","Osh Kosh B'Gosh"],
-  "Holiday (Can be images)":["Snowman","Jack-o-Lantern","Heart","Shamrock","Easter Egg","Turkey","American Flag","Martin Luther King","George Washington","Fireworks","Santa Claus (figurine)","Reindeer (stuffed)","Animatronic Halloween","Easter Basket","Driedel or Menorah","Greatest Dad Souvenir","Mother's Day Souvenir","Cornucopia","Christmas Ornament"],
-  "Furniture":          ["Office Chair","Recliner","Arm Lamp","Home Made Furniture","Folding Chairs","File Cabinet","Free Furniture","Pool or Fooseball Table","Bar Stool","$250+ Furniture","Folding Table (for sale)","Dining Table w/ 5+ Chairs","Refinished Blue Furniture","Distressed Furniture","Book Shelf","Ottoman","Sofa or Loveseat","Floor Lamp","Endtable / Nightstand"],
-  "Sports":             ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock"],
-  "BrickaBrack":        ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console"],
-  "Old Tech":           ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine"],
+  "Sale Specific":      ["Helium Balloon","10+ signs for the same sale","Pink Lemonade Stand","Grilled Food (at sale)","Rummage Sale","Sunday Signage","Two Signs on One Stick","Cardboard Sign","Sign Says Distance in Miles","Meme on Sign (Trump, Poop Emoji, etc.)","Multi-Family Garage Sale","Estate Sale","Brick Fascade","Vintage Car for Sale","Boat for Sale","Sale continues in house","Lemonade Stand (kid < 5 years old)","Sale on Driveway, Lawn, & Garage","Garage Sale sign in yard","Sign pointing the wrong way","Neon colored sign","Sign with a smiley face","Sign that says Everything Must Go","Sign that lists specific items","Sign with a QR code","Items displayed on a blanket","Clothes on a real clothing rack","Items priced with sticker dots","Sale under a canopy or tent","Books organized by genre","Sale at a church or school","Sale in an apartment complex","Gated community sale","Sale with live music","Sale with a food truck nearby","Seller in pajamas","Seller on their phone the whole time","Seller who won't negotiate","Sign says Accepts Venmo","Dog present (must ask price of dog)","Fill a bag pricing"],
+  "Characters (Can be images)":["Rubeus Hagrid (Harry Potter)","Starscream (Transformers)","Brainy Smurf","Luigi (Super Mario Bros)","Patrick Star (Spongebob)","Spiderman","Dora the Explorer","Batman & Robin (both)","Thomas the Train","Tigger (Winnie the Poo)","Mickey Mouse","Cabbage Patch Kid","Tinkerbell","Bugs Bunny","Bart Simpson","Hello Kitty","Power Ranger (Blue)","the Lorax (Dr. Seuss)","Grover (Sesame Street)","Yogi Bear","Scooby Doo","Tweety Bird","Goofy","Cruella de Vil","Bambi","Cinderella","Chip or Dale (chipmunks)","He-Man","Optimus Prime","Care Bear (any)","My Little Pony (original)","Donkey Kong","Pac-Man","Sonic the Hedgehog","Pikachu","Link (Legend of Zelda)","Grimace (McDonald's)","The Noid (Domino's)","Charizard","Bulbasaur","Ren & Stimpy","Inspector Gadget","Animaniacs (Yakko, Wakko, or Dot)","The Tick"],
+  "Toys":               ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz","Etch A Sketch","Spirograph","View-Master","Lite-Brite","Silly Putty (in egg)","Slinky","Yo-Yo (Green or Wooden)","Jacks set","Marbles collection","Ken doll","Stretch Armstrong","Playmobil set","Fisher Price Little People set","Matchbox car","Erector Set","Lincoln Logs","Radio control car","Slot car track","Pogo stick","Hula hoop","Jump rope","Hacky sack","Tamagotchi","Hungry Hungry Hippos","Tech Deck (fingerboard)","M.U.S.C.L.E. or Micromachines","Bop It"],
+  "Games":              ["Trivial Pursuit","Rummikub","Apples 2 Apples","800+ Piece Puzzle","Cranium","Magic Cards or Pokemon","SORRY!","$20+ Board Game","LIFE","Board Game in Original Shrinkwrap","Poker Chips","Monopoly (not themed)","Monopoly (themed)","Risk (themed)","Rubiks Cube","DVD or VHS based game","Cards Against Humanity","Game dated before 1990","Digital version of Board Game","Card game w/ rubber band (no box)","Chess set w/ mismatched pieces","Dominoes w/ cigarette or alcohol backs","Battleship (Electronic version)","Scrabble (Deluxe or Rotating Board)","Candy Land (dated before 2010)","Chutes and Ladders","Operation (w/ working batteries)","Jenga (Giant size)","Guess Who","Trouble","Pandemic","Settlers of Catan","Ticket to Ride","Sequence","Balderdash","Chess or Checkers (magnetized)","Deluxe / Gold Edition board game","Cards Against Humanity set over $49","Collector's Tin board game","Foreign Language Edition board game","Game with a name written inside the lid","Murder mystery dinner game","Sports-specific trivia game","Religious or Bible-themed game","Drinking game (non-card)","Dice game in a tin or tube","Educational math card game","Pictionary","Taboo (with working buzzer)","Telestrations","Cribbage board (hand carved or wooden)"],
+  "Shoppers":           ["Manta","The Kraken","High School / College Classmate","Recidivist (Seen at other sale earlier today)","Barnacle Bob","Haggler in Luxury Car","Haggler on item <=$1","Family of 5+","Mixed Race Couple","Person over 6ft 2in","Sunvisor or Fanny Pack Wearer","Shopper eating (food not from this sale)","Has Change Purse or Money Changer","Shopper with Headphones","Non-English Speaker","Won't Leave the Car","Wearing Shorts & Hoodie","Grandparent & Grandkid","Your Neighbor (name known in advance)","Wearing full pajamas","Wearing a sports jersey","Visible tattoo sleeve","Wearing a suit","Couple in matching outfits","Pushing stroller without a baby","On phone the entire time","Brought their own bag","Brought a measuring tape","Asks 'is this your best price?' on every item","Pays entirely in coins","Couple where one is clearly reluctant","Group of 4+ women shopping together","Two strangers bonding over an item","Parent dragging a bored teenager","Elderly couple holding hands","On video call / FaceTime for approval","Still wearing their name tag from work","Someone who tips the seller","Drinking a beverage from home"],
+  "Kitchen":            ["Martini Glass","Tupper Ware","Travel Mug","Chaffing Dish","Kitchen Sink","German Beer Stein","Wine Stopper","Kiss the Cook item","Cheese Grater","Cast Iron Skillet","Knife Block","Plastic Cereal Cannisters","Stainless Steel Trashcan","Salad Spinner","Pizza Stone","Strainer","Ice Cream Scoop","Pot Holder","Melon Baller or Potato Peeler","Rolling Pin","Ice Cube Tray","Odd Shape or Engraved Cutting Board","Metal Colander","Mixing Bowl Set","Measuring Cups","Wooden Spoon Set","Muffin Tin","Baking Sheet","Casserole Dish","Electric Can Opener","Bottle Opener","Corkscrew","Dish Rack","Apron","Kitchen Timer","Spice Rack","Paper Towel Holder","Oven Mitts","Bundt Pan","Springform Pan","Dutch Oven","Wok","Fondue Set","Butter Dish","Gravy Boat","Cake Stand","Bread Box","Mandoline Slicer","Mortar & Pestle","Oil & Vinegar Set","Pie Dish","Souffle Dish","Deviled Egg Tray","Punch Bowl Set","Cocktail Shaker","Jello Mold","Tea Kettle","Crepe Pan","Corn Cob Holders"],
+  "Appliances":         ["George Foreman Grill","Popcorn Popper","Bread Machine","Mixer","Coffee Machine","Crock Pot","Toaster Oven","Waffle Iron","Foot Spa","Mini Fridge","Chest Freezer","Microwave (Countertop)","Magic Bullet","Rice Cooker","Sewing Machine","Juicer","Pancake Griddle","Pressure Cooker","Deep Fryer / Air Fryer","Electric Skillet","Rotisserie Oven","4-Slot Toaster","Quesadilla Maker","Hot Dog Roller","Egg Cooker","Fondue Pot (electric)","Cotton Candy Machine","Snow Cone Maker","Espresso Machine","Keurig or Pod Coffee Maker","Margarita Machine","SodaStream","Beer Brewing Kit","Milk Frother","Little Green Steam Machine","Electric Pet Nail Trimmer","Cake Pop Maker","Electric Donut Maker","Gas Range","Front Load Laundry Pedestals","Air Fryer Accessories","Presto PopLite or Whirley Pop","Portable AC Unit","Blackstone On the Go","2+ of the same appliance at one sale","As Seen on TV appliance","Appliance still in original box","Pampered Chef appliance"],
+  "Clothes":            ["High-Heeled Shoes (Red)","Fur Coat","Baseball Cap","<$1 Sunglasses","Woman's Hat","Socks","Bra","Leather Jacket","Adult PJs with Cartoon Character","Fanny Pack","Patagonia Jacket","Converse Sneakers","Tie with Words, Scene, or Character","Wig","Lady's Hat (not Winter)","Necklace (Blue)","Bogs (Rain Boots)","LuLaRoe","Osh Kosh B'Gosh","Sequined or bedazzled item","Bridesmaid or prom dress","Military uniform or jacket","Bowling shirt with a name on it","Matching tracksuit","Referee or umpire shirt","Chef's coat or apron","Denim jacket","Flannel shirt","Cowboy boots","Rain poncho","Winter vest (puffer)","Wool sweater","Overalls (adult)","Metallica or Rolling Stones t-shirt","Sports jersey (pro team)","Tie-dyed (non t-shirt)","Made in USA tag on any item","Vintage Land's End or LL Bean","Ralph Lauren Polo","Members Only jacket","Izod Lacoste (vintage crocodile)","Bolo tie","Belt with large buckle","Suspenders","Silk scarf","Trucker hat with local business","Visor","Leg warmers","Vacation t-shirt from before 2000","Monogrammed clothing","Ugly Christmas sweater","Uniform from a job (name tag still on)","Shirt with shoulder pads","Hypercolor shirt"],
+  "Holiday (Can be images)":["Snowman","Jack-o-Lantern","Heart","Shamrock","Easter Egg","Turkey","American Flag","Martin Luther King","George Washington","Fireworks","Santa Claus (figurine)","Reindeer (stuffed)","Animatronic Halloween","Easter Basket","Driedel or Menorah","Greatest Dad Souvenir","Mother's Day Souvenir","Cornucopia","Christmas Ornament","Nativity scene (full)","Witch Hat","Valentine's Day stuffed animal","St. Patrick's Day beer mug","Uncle Sam","Mardi Gras mask","Maypole or May basket","Graduation cap","New Year's top hat","Pilgrim figurine","Cupid","Groundhog","Holiday cookie cutter set","Sugar Skull"],
+  "Furniture":          ["Office Chair","Recliner","Arm Lamp","Home Made Furniture","Folding Chairs","File Cabinet","Free Furniture","Pool or Fooseball Table","Bar Stool","$250+ Furniture","Folding Table (for sale)","Dining Table w/ 5+ Chairs","Refinished Blue Furniture","Distressed Furniture","Book Shelf","Ottoman","Sofa or Loveseat","Floor Lamp","Endtable / Nightstand","Rocking chair","Papasan chair","Bean bag chair","Chaise lounge","Camping chair","Director's chair","Drafting table","Coffee table with storage","Nesting tables (set)","Picnic table","Armoire or wardrobe","Chest of drawers","Hope chest or cedar chest","Steamer trunk","Blanket ladder","Headboard only","Bunk bed frame","Murphy bed","Patio set","Wicker furniture","Park bench","Furniture with original price tag","China cabinet or Curio cabinet","Shoe rack","Furniture with moving tags still attached","Furniture with items still inside a drawer","Furniture with name written on the back","Furniture with a sold sign on it","Entire bedroom set for sale"],
+  "Sports":             ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock","Tennis racket","Easton hockey stick","Viper or Rawlings baseball bat","Croquet set","Bocce ball set","Horseshoes set","Wilson volleyball","Pink or Green yoga mat","Resistance bands","Pull up bar","Ab roller","Kettlebell","Exercise bike","Hanging punching bag","Kayak paddle","Hiking poles","BMX bike","Adult bike helmet","Roller blades","Multi-color bowling shoes","E-bike","Olympic souvenir","Signed sports item","Little League uniform","Golf bag (full set)","Snorkel set (mask + fins)","Dart board"],
+  "BrickaBrack":        ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console","Hamilton or Franklin Mint collectible plate","Crystal paperweight","Vintage advertising tin","Ceramic or plastic fruit","Driftwood art","Macrame wall hanging","Colored glass bottles","Stained glass panel","Bobblehead (not Funko Pop)","Troll doll","Dashboard hula girl","Lava lamp","Frog statue (stone or metal)","Lucky cat (Maneki-neko)","Precious Moments figurine","Signed pottery","Vintage souvenir spoon","Souvenir thimble","Political button or bumper sticker","Vintage clock (not working)","Barometer","Kaleidoscope","Music box (working)","Bookend set"],
+  "Old Tech":           ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine","Pager or beeper","Answering machine (standalone)","Walkie talkies","CB radio","Satellite phone","Nokia brick phone","Film camera (35mm)","Disposable camera (unused)","Slide projector","VHS camcorder","Boom box","iPod (original or mini)","Karaoke machine (old)","Original Game Boy Color","Sega Genesis or Super Nintendo","IBM ThinkPad (old)","Zip drive","Electric typewriter","Adding machine","Garmin or TomTom GPS","TI-83, TI-84, or TI-86 calculator"],
   "Media":              ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)"],
   "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle"],
   "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Bird Decoys","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Chainsaw","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet"],
@@ -1051,7 +1062,7 @@ const CATEGORIES = {
   "Musical Instrument": ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine"],
   "Misc.":              ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys"],
   "Alaskana":           ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item"],
-  "Items in Free Box":  ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Household Cleaner","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap"],
+  "Items in Free Box":  ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap","Remote control (no batteries)","Instruction manual (no product)","Partially used candle","McDonald's toy","Used gift wrap or ribbon","Foam pool noodle","Trophy with someone else's name","Framed photo of strangers","Hotel toiletries (unopened)","Foreign coin","Partially used spice jar","Reusable grocery bag (worn)","Bread bag clips","Takeout menu collection","Paper plates (partial pack)","Non-spice food item","WD-40","Pine Sol","Cassette tape with no label","Empty spray bottle","Stained throw pillow","Novelty pen that doesn't write","Airport luggage tag","Swag from a defunct business","Armor-All","Duct Tape","Kids meal toy (not McDonald's)","Plastic bead necklace","Item with a feather on it"],
   "Boy Scouts":         ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map"],
   "Rob's 50th":         ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD"]
 };
@@ -1664,6 +1675,33 @@ function getWinLines() {
   return WIN_LINES;
 }
 
+// All possible 4-in-a-row sequences (subsets of WIN_LINES, length 4)
+const FOUR_LINES = (() => {
+  const lines = [];
+  WIN_LINES.forEach(line => {
+    for (let i = 0; i <= line.length - 4; i++) {
+      lines.push(line.slice(i, i + 4));
+    }
+  });
+  return lines;
+})();
+
+function countFourInARows() {
+  // Count 4-in-a-rows that are NOT part of a completed 5-in-a-row BINGO
+  // (so they only add value as a tiebreaker when no full line exists)
+  let count = 0;
+  FOUR_LINES.forEach(line => {
+    if (line.every(i => markedCells.has(i))) {
+      // Only count if the full 5-line it belongs to is NOT complete
+      const parentLine = WIN_LINES.find(wl => line.every(i => wl.includes(i)));
+      if (!parentLine || !parentLine.every(i => markedCells.has(i))) {
+        count++;
+      }
+    }
+  });
+  return count;
+}
+
 function checkWin(showBanner = true) {
   const mode = getGameMode();
   const winLines = getWinLines();
@@ -1680,7 +1718,6 @@ function checkWin(showBanner = true) {
   } else if (mode === '2line') {
     hasWon = completedLines.size >= 2;
   } else {
-    // 1line, corners, Tshape, cross — need at least 1 complete pattern
     hasWon = completedLines.size >= 1;
   }
 
@@ -1710,9 +1747,11 @@ function checkWin(showBanner = true) {
 function updateScore() {
   const squares    = markedCells.size;
   const bingoCount = checkWin(true);
-  const score      = bingoCount + squares * 0.01;
-  document.getElementById('scoreVal').textContent = score.toFixed(2);
-  // Pass score directly so we don't have to re-read the DOM
+  const fourCount  = countFourInARows();
+  // Score = bingos + squares * 0.01 + four-in-a-rows * 0.001
+  const score = bingoCount + squares * 0.01 + fourCount * 0.001;
+  // Display with 3 decimal places: X.YYZ (bingos.squares.fours)
+  document.getElementById('scoreVal').textContent = score.toFixed(3);
   mpUpdateScore(score, bingoCount);
 }
 
@@ -1795,14 +1834,12 @@ function closeModal() {
 function generateCard(keepSeed = false) {
   markedCells = new Set();
   lastBingoCount = 0;
-  // Always use the persistent room code — never change it on new card
+  // Restore persistent room code but DON'T use it as the card seed
   const roomCode = getOrCreateRoomCode();
-  applyGameCode(roomCode, false);
-  // For join/start game flows, keepSeed uses whatever was pre-set
-  // For normal new card, seed from the persistent room code
-  if (!keepSeed) {
-    currentSeed = seedFromCode(roomCode);
-  }
+  const inp = document.getElementById('gameCodeInput');
+  if (inp) inp.value = roomCode;
+  // Only use a deterministic seed when explicitly joining a shared game
+  if (!keepSeed) currentSeed = null;
   cardData = buildNewCardData();
   document.getElementById('winBanner').classList.remove('show');
   renderCard(true);
@@ -1949,8 +1986,9 @@ document.head.appendChild(qScript);
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 600;
 
-initModals(); // inject modals into DOM before anything references them
-initSupabase(); // init Supabase client
+initModals();
+// Init Supabase after DOM is ready — constants are defined at top of script
+initSupabase();
 
 // Pre-fill player name if previously used
 try {
@@ -1998,7 +2036,7 @@ try {
   const roomCode = getOrCreateRoomCode();
   const codeInp = document.getElementById('gameCodeInput');
   if (codeInp && !codeInp.value) codeInp.value = roomCode;
-  currentSeed = seedFromCode(roomCode);
+  // Don't set currentSeed from room code — seed is only for shared game joins
 } catch(e) {
   // If anything in init fails, nuke localStorage and start fresh
   console.error('Init error, resetting:', e);
@@ -2058,13 +2096,8 @@ if ('serviceWorker' in navigator) {
 }
 
 /* ── SUPABASE MULTIPLAYER ── */
-const SUPABASE_URL = 'https://worjugymwmxjgoeysccm.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvcmp1Z3ltd214amdvZXlzY2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5ODE5MDIsImV4cCI6MjA5MjU1NzkwMn0.pCF_5O4sLGBI6Nd2I7-uO5myvR7b3d9OkDEdAH2R3yI';
 
-let sb         = null;  // supabase client
-let mpPlayer   = null;  // { id, name, game_code }
-let mpChannel  = null;  // realtime channel
-let mpPlayerId = null;  // uuid of this player's row
+
 
 function initSupabase() {
   try {
@@ -2235,7 +2268,7 @@ function renderMpPlayers(players) {
       <span style="font-size:.9rem">${medal}</span>
       <span class="mp-player-name">${p.player_name}${isMe ? ' <span class="mp-player-you">(you)</span>' : ''}</span>
       <span class="mp-player-bingos">${bingos}</span>
-      <span class="mp-player-score">${parseFloat(p.score).toFixed(2)}</span>
+      <span class="mp-player-score">${parseFloat(p.score).toFixed(3)}</span>
     </div>`;
   }).join('');
 }
