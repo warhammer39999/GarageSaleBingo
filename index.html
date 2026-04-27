@@ -624,6 +624,147 @@
   }
   .game-code-leave:hover { opacity: 1; }
 
+  /* ── DARK MODE ── */
+  body.dark-mode {
+    --cream: #1a1a2e;
+    --navy:  #e8e8f0;
+    background: #1a1a2e;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,209,102,.06) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(6,214,160,.05) 0%, transparent 40%);
+    color: #e8e8f0;
+  }
+  body.dark-mode .venmo-box,
+  body.dark-mode .score-section,
+  body.dark-mode .rules-section,
+  body.dark-mode .options-section,
+  body.dark-mode .catsel-section,
+  body.dark-mode .mp-section,
+  body.dark-mode .game-code-bar { background: #16213e; border-color: #4a4a6a; box-shadow: 5px 5px 0 #4a4a6a; }
+  body.dark-mode .rules-header,
+  body.dark-mode .options-header,
+  body.dark-mode .catsel-header,
+  body.dark-mode .mp-header { background: #0f3460; }
+  body.dark-mode .bingo-cell { background: #16213e; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .bingo-cell:hover { background: #1a2a4a; }
+  body.dark-mode .bingo-cell.stamped { background: #2d1b1b; color: #ff6b6b; }
+  body.dark-mode .bingo-cell.winner  { background: #2d2d1b !important; color: #ffd166 !important; }
+  body.dark-mode .bingo-cell.free-space { background: #1e3a2e !important; color: #06d6a0 !important; }
+  body.dark-mode .card-outer { background: #0f3460; border-color: #4a4a6a; box-shadow: 6px 6px 0 #4a4a6a; }
+  body.dark-mode .score-title { color: #e8e8f0; }
+  body.dark-mode .score-num   { color: var(--yellow); }
+  body.dark-mode .catsel-cat-name { color: #c8c8e0; }
+  body.dark-mode .catsel-row.is-required .catsel-cat-name { color: #06d6a0; }
+  body.dark-mode .catsel-row.is-hidden   .catsel-cat-name { color: #555; }
+  body.dark-mode .mp-scoreboard-title,
+  body.dark-mode .mp-hint,
+  body.dark-mode .mp-status,
+  body.dark-mode .game-code-title { color: #c8c8e0; }
+  body.dark-mode .copyright,
+  body.dark-mode .copyright a { color: #555; }
+  body.dark-mode .option-row { border-color: #2a2a4a; }
+  body.dark-mode .option-row:hover { background: #1e2a3e; }
+  body.dark-mode .option-text { color: #c8c8e0; }
+  body.dark-mode .option-text span { color: #888; }
+  body.dark-mode .rules-body,
+  body.dark-mode .options-body,
+  body.dark-mode .catsel-body,
+  body.dark-mode .mp-body { background: #16213e; color: #c8c8e0; }
+  body.dark-mode .rules-body li,
+  body.dark-mode .scoring-block { color: #c8c8e0; }
+  body.dark-mode .mp-name-input,
+  body.dark-mode .game-code-input,
+  body.dark-mode .game-code-join-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .game-code-copy { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .mp-player-row { background: #0f3460; border-color: #2a2a4a; }
+  body.dark-mode .mp-player-row.me { background: #0a2a3e; border-color: var(--blue); }
+  body.dark-mode .mp-player-name { color: #e8e8f0; }
+  body.dark-mode .catsel-counter { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
+  body.dark-mode .mp-code-pill   { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
+  body.dark-mode .bottom-label { color: #e8e8f0; }
+  body.dark-mode .cat-label    { color: #e8e8f0; }
+  /* Match bottom label backgrounds to BINGO header dark colors */
+  body.dark-mode .bl-bot-b { background: #5a1a1f; }
+  body.dark-mode .bl-bot-i { background: #5a3a10; }
+  body.dark-mode .bl-bot-n { background: #1a4a30; }
+  body.dark-mode .bl-bot-g { background: #1a3050; }
+  body.dark-mode .bl-bot-o { background: #3a1a4a; }
+  /* Vertical cat-label per-column colors */
+  body.dark-mode .card-outer .cat-label:nth-child(5n+1) { background: #5a1a1f; color: #e8a0a5; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+2) { background: #5a3a10; color: #e8c090; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+3) { background: #1a4a30; color: #80d4a8; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+4) { background: #1a3050; color: #80b0d8; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+5) { background: #3a1a4a; color: #c090d8; }
+  body.dark-mode img { filter: none; }
+
+  /* Tone down headers and buttons in dark mode */
+  body.dark-mode .mp-header h2,
+  body.dark-mode .rules-header h2,
+  body.dark-mode .options-header h2,
+  body.dark-mode .catsel-header h2 {
+    color: #c8c8e0;
+    text-shadow: none;
+  }
+  body.dark-mode .generate-btn {
+    background: #0f3460;
+    color: #c8c8e0;
+    border-color: #4a4a6a;
+    box-shadow: 4px 4px 0 #4a4a6a;
+    text-shadow: none;
+  }
+  body.dark-mode .generate-btn:hover { background: #1a3a6a; }
+  body.dark-mode .win-text {
+    background: #2d2d1b;
+    color: #ffd166;
+    border-color: #4a4a6a;
+    box-shadow: 6px 6px 0 #4a4a6a;
+    text-shadow: none;
+  }
+  body.dark-mode .mp-join-btn,
+  body.dark-mode .btn-join {
+    box-shadow: 3px 3px 0 #4a4a6a;
+    border-color: #4a4a6a;
+  }
+  /* BINGO letter headers — muted in dark mode */
+  body.dark-mode .bl-b { background: #5a1a1f; color: #e8a0a5; }
+  body.dark-mode .bl-i { background: #5a3a10; color: #e8c090; }
+  body.dark-mode .bl-n { background: #1a4a30; color: #80d4a8; }
+  body.dark-mode .bl-g { background: #1a3050; color: #80b0d8; }
+  body.dark-mode .bl-o { background: #3a1a4a; color: #c090d8; }
+  /* Zigzag banners — tone down in dark mode */
+  body.dark-mode .banner-top    { background: #3a1a1f; opacity: .7; }
+  body.dark-mode .banner-bottom { background: #3a3010; opacity: .7; }
+  /* Modals */
+  body.dark-mode .modal-overlay { background: rgba(0,0,0,.75); }
+  body.dark-mode .modal-box {
+    background: #16213e;
+    border-color: #4a4a6a;
+    box-shadow: 6px 6px 0 #4a4a6a;
+  }
+  body.dark-mode .modal-box h3 { color: #e8e8f0; text-shadow: none; }
+  body.dark-mode .modal-box p  { color: #c8c8e0; }
+  body.dark-mode .modal-btn    { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
+  body.dark-mode .modal-btn-no { background: #0f3460; color: #c8c8e0; }
+  body.dark-mode .modal-btn-no:hover { background: #1a3a6a; }
+  /* Options revert button */
+  body.dark-mode .option-revert-btn {
+    background: #0f3460; color: #c8c8e0;
+    border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a;
+  }
+  body.dark-mode .option-revert-btn:hover { background: #1a3a6a; }
+  /* Score section */
+  body.dark-mode .score-section {
+    background: #16213e; border-color: #4a4a6a;
+  }
+  /* Catsel error */
+  body.dark-mode .catsel-error {
+    background: #2d1b1b; border-color: #8b3a3a; color: #ff9090;
+  }
+  /* Toggle sliders */
+  body.dark-mode .toggle-slider {
+    background: #4a4a6a;
+  }
+
   /* ── LARGE TEXT MODE ── */
   body.large-text .bingo-cell {
     font-size: clamp(0.88rem, 2.4vw, 1.1rem);
@@ -857,14 +998,14 @@
   </div>
   <div class="rules-body collapsed" id="rulesBody">
     <ol>
-      <li>You do <strong>not</strong> have to purchase the item in order to check it off your list.</li>
+      <li>You do <strong>NOT</strong> have to purchase the item in order to check it off your list.</li>
       <li>You may <strong>NOT</strong> elicit external assistance — doing so will result in the disqualification of any items at the current sale (whether or not the external assistance proved helpful).</li>
       <li>For an item to count, while at the sale you must <strong>show the item to your opponent and get approval</strong> before sign-off. Discretion is advised, in case of arbitration (see Rule 7).</li>
       <li>Unless specifically noted in the category, the <strong>actual item must be found</strong>. Photos or images of the item are insufficient in most instances.</li>
       <li>Items must be signed off <strong>at the current sale</strong>. Items recalled from previous sales do not count.</li>
       <li>Items must be signed off on the <strong>first visit</strong> in a given day. Returning to a sale to sign off an item is prohibited.</li>
-      <li>If there is a debate about whether an item qualifies, you may present the item to the proprietor with a <strong>completely neutral question</strong>. <em>"Ma'am, what would you say this item is?"</em> is acceptable. <em>"Is this a floor lamp?"</em> is not. If the proprietor answers with the exact item name, the box is awarded.</li>
-      <li>A given item can only count towards a <strong>single square</strong>.</li>
+      <li>If there is a debate about whether an item qualifies, you may present the item to the proprietor with a <strong>completely neutral question</strong>. <em>"Ma'am, what would you say this item is?"</em> is acceptable. <em>"Is this a <u>floor lamp</u>?"</em> is not. If the proprietor answers with the exact item name, the box is awarded.</li>
+      <li>Any found item can only count towards a <strong>single square</strong>.</li>
     </ol>
     <div class="scoring-block">
       <h3>🏆 Scoring (Rules 9 &amp; 10)</h3>
@@ -1052,7 +1193,7 @@ const CATEGORIES = {
   "Old Tech":           ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine","Pager or beeper","Answering machine (standalone)","Walkie talkies","CB radio","Satellite phone","Nokia brick phone","Film camera (35mm)","Disposable camera (unused)","Slide projector","VHS camcorder","Boom box","iPod (original or mini)","Karaoke machine (old)","Original Game Boy Color","Sega Genesis or Super Nintendo","IBM ThinkPad (old)","Zip drive","Electric typewriter","Adding machine","Garmin or TomTom GPS","TI-83, TI-84, or TI-86 calculator"],
   "Media":              ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)","Choose Your Own Adventure book","Cookbook (celebrity chef)","Romance novel (Fabio cover)","Hardy Boys or Nancy Drew","Encyclopedia Britannica set","Readers Digest","Chiltons auto repair manual","8-track tape","Mixed tape (handwritten label)","Full TV series on DVD","Sealed vinyl (never opened)","Disney VHS (black diamond edition)","Betamax tape","LaserDisc","3D Blu-Ray","Movie poster (original)","National Geographic collection","Life magazine (vintage)","Sports Illustrated Swimsuit edition","Rolling Stone (vintage)","Marvel comic book","Archie comic book","Vintage catalog (Sears, JC Penney)","Vintage newspaper (major headline)","PC game in box","Bible with pictures","Pulp Fiction on DVD","Book with 600-800 pages","Reba or Dolly cassette","Farmers Almanac","Medical or law reference book","Biography of a US President","Art instruction book"],
   "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle","Knitting needles and pattern","Cross stitch kit or finished piece","Fabric collection","Cricut machine or cartridge","Rubber stamp collection","Scrapbook (completed)","Pressed flower art","Candle collection","Decorative wreath","Floral arrangement (silk)","Decorative letters (wall)","Mason jar collection","Farmhouse sign","Chalk painted item","Burlap decoration","Woman's perfume","Hat box","Jewelry box","Brooch or lapel pin","Tea set (complete)","Cake decorating kit","Cookie jar","Vintage recipe box","Pie server set","Punch bowl set","Personalized cutting board","Item with Oprah Winfrey on it","Longaberger basket","Vera Bradley bag","Mary Kay or Avon item","PartyLite candle (in box)","Yankee Candle (orange)","Thirty-One bag or organizer","Tupperware (vintage harvest gold)","Scentsy warmer or wax","Pampered Chef stoneware","Tastefully Simple item","Princess House crystal or cookware","Home Interiors figurine or picture","Bath & Body Works gift set","Coach purse or wallet","Dooney & Bourke bag","Willow Tree figurine","Swarovski crystal piece"],
-  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Bird Decoys","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet","Socket wrench set","Level (48 inch or larger)","Fishing net or gaff","Ammo box (empty)","Canadian Goose decoy","Jack stands","Creeper (mechanic's rolling board)","Jumper cables","Battery charger","Smoker (any size)","Cooler (50+ gallon)","ATV or dirt bike gear","Weight bench","Archery target","Billiard cue","Poker chip set (300+ chips)","Bar sign (neon or metal)","Wall mount bottle opener","5+ shot glasses at one sale","Sports bar stool","Foosball table","Air hockey table","Signed sports photo","Chainsaw","Shaving kit (straight razor)","Cigar box or humidor","Military memorabilia","Pocket watch collection","Dickies work pants","Hard hat","Blaze orange vest","Cowboy hat","Suspenders (wide)","Letterman jacket","Hawaiian shirt (loud pattern)"],
+  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet","Socket wrench set","Level (48 inch or larger)","Fishing net or gaff","Ammo box (empty)","Canadian Goose decoy","Jack stands","Creeper (mechanic's rolling board)","Jumper cables","Battery charger","Smoker (any size)","Cooler (50+ gallon)","ATV or dirt bike gear","Weight bench","Archery target","Billiard cue","Poker chip set (300+ chips)","Bar sign (neon or metal)","Wall mount bottle opener","5+ shot glasses at one sale","Sports bar stool","Foosball table","Air hockey table","Signed sports photo","Chainsaw","Shaving kit (straight razor)","Cigar box or humidor","Military memorabilia","Pocket watch collection","Dickies work pants","Hard hat","Blaze orange vest","Cowboy hat","Suspenders (wide)","Letterman jacket","Hawaiian shirt (loud pattern)"],
   "Old Folks":          ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager","Shower chair or bench","Grabber or reacher tool","Hearing aid case","Wheelchair (manual)","Knee scooter","Compression socks","Velcro shoes","Men's cardigan sweater","Large floral brooch","Bifocal glasses (extra pair)","Large button telephone","TV tray set","Magnifying glass (large)","Letter opener","Sewing basket","Big Band vinyl","Norman Rockwell item","Precious Moments figurine","Jello mold","Church cookbook","Pressure cooker (non-electric)","Cat or frog figurine collection","Ceramic animal cookie jar","Scrapbook with old news clippings","Arm chair covers (antimacassar)","Clear plastic table cloth","Pill crusher or splitter","Coffee tin","Paint by numbers (completed)","Macrame wall hanging","Velvet painting","Wall mounted clock (ornate)","Crocheted afghan","Latch hook rug (completed)","Embroidered pillowcase set"],
   "Musical Instrument": ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine","Ukulele","Banjo","Xylophone or marimba","Castanets","Triangle","Taiko drum","Toy piano","MIDI controller","Guitar case (hardshell)","Instrument stand","Metronome","Tuning fork","Drum throne","Instrument cable collection","Microphone (handheld)","Guitar tablature book","Piano lesson book","Reel to reel recorder","Guitar strap (decorative)","Drum sticks","Vintage music poster"],
   "Misc.":              ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys","Doorbell (wired or wireless)","Door knocker","House numbers (metal)","Curtain rods","Window blinds","Throw rug","Welcome mat","Tension rod","Light switch plates","Drawer pulls or cabinet knobs","Bird bath","Wind chime","Sprinkler head or system","Garden hose","Wheelbarrow","Stepping stones","Outdoor thermometer","Rain gauge","Flag pole","Yard ornament (metal)","Geode or crystal","Arrowhead collection","Yearbook","Paint (partial can)","Door handle or knob set","Luggage tag","Dry erase board","Mail sorter","Umbrella stand","Shoe horn","Lint roller (jumbo)"],
@@ -1989,7 +2130,7 @@ function applyLargeText() {
 }
 function applyDarkMode() {
   const on = document.getElementById('optDarkMode').checked;
-  document.body.style.filter = on ? 'invert(1) hue-rotate(180deg)' : '';
+  document.body.classList.toggle('dark-mode', on);
 }
 function applyShowScore() {
   const on = document.getElementById('optShowScore').checked;
