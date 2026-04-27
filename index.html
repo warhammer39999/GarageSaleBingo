@@ -476,7 +476,7 @@
   .bl-bot-g { background: var(--blue);    grid-column: 7; }
   .bl-bot-o { background: var(--purple);  grid-column: 9; }
 
-  /* ── CATEGORY SELECTION ── */
+  /* ── CATEGORY SELECTION (SLIDERS) ── */
   .catsel-section {
     max-width: 900px; margin: 22px auto 0;
     background: white; border: 3px solid var(--navy);
@@ -490,50 +490,49 @@
   .catsel-toggle { font-family:'Fredoka One',cursive; color:rgba(255,255,255,.7); font-size:.9rem; }
   .catsel-body { padding: 14px 18px; }
   .catsel-body.collapsed { display: none; }
-  .catsel-hint {
-    font-size: .78rem; font-weight: 600; color: #888; font-style: italic;
-    margin-bottom: 12px; line-height: 1.5;
+  .catsel-hint { font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px; line-height:1.5; }
+  .catsel-legend { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px; }
+  .catsel-legend span { font-family:'Fredoka One',cursive; font-size:.72rem; }
+  .catsel-legend .leg-hidden { color:#c0392b; }
+  .catsel-legend .leg-neutral { color:#888; }
+  .catsel-legend .leg-required { color:#1a7a3a; }
+  .catsel-counters { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .catsel-counter { font-family:'Fredoka One',cursive; font-size:.88rem; background:var(--cream); border:2px solid var(--navy); border-radius:8px; padding:4px 12px; color:var(--navy); }
+  .catsel-counter span { color:var(--red); font-size:1.1rem; }
+  .catsel-error { display:none; margin-top:10px; background:#fff0f0; border:2px solid var(--red); border-radius:8px; padding:8px 12px; font-size:.82rem; font-weight:700; color:var(--red); }
+  .catsel-error.show { display:block; }
+  .catsel-row {
+    display: grid;
+    grid-template-columns: 1fr 160px 64px;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
   }
-  .catsel-counters {
-    display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px;
+  .catsel-row:last-child { border-bottom: none; }
+  .catsel-cat-name { font-size:.82rem; font-weight:700; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .catsel-row.is-hidden .catsel-cat-name { color:#bbb; text-decoration:line-through; }
+  .catsel-row.is-required .catsel-cat-name { color:#1a7a3a; font-weight:800; }
+  .catsel-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 3px;
+    outline: none; cursor: pointer;
   }
-  .catsel-counter {
-    font-family: 'Fredoka One', cursive; font-size: .88rem;
-    background: var(--cream); border: 2px solid var(--navy);
-    border-radius: 8px; padding: 4px 12px; color: var(--navy);
+  .catsel-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    cursor: pointer; transition: transform .1s;
   }
-  .catsel-counter span { color: var(--red); font-size: 1.1rem; }
-  .catsel-table {
-    width: 100%; border-collapse: collapse;
+  .catsel-slider::-webkit-slider-thumb:active { transform: scale(1.25); }
+  .catsel-slider::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer;
   }
-  .catsel-table th {
-    font-family: 'Fredoka One', cursive; font-size: .8rem;
-    color: var(--navy); text-align: left; padding: 4px 8px 8px;
-    border-bottom: 2px solid var(--navy);
+  .catsel-val-label {
+    font-family: 'Fredoka One', cursive; font-size: .72rem;
+    text-align: center; white-space: nowrap;
   }
-  .catsel-table th:nth-child(2), .catsel-table th:nth-child(3) { text-align: center; }
-  .catsel-table td {
-    padding: 5px 8px; font-size: .82rem; font-weight: 600;
-    color: var(--navy); border-bottom: 1px solid #eee; vertical-align: middle;
-  }
-  .catsel-table tr:last-child td { border-bottom: none; }
-  .catsel-table td:nth-child(2), .catsel-table td:nth-child(3) { text-align: center; }
-  .catsel-table tr.cat-hidden-row td { color: #aaa; }
-  .catsel-table tr.cat-required-row td:first-child { color: var(--red); font-weight: 800; }
-  /* Custom checkbox styling */
-  .cat-check {
-    width: 18px; height: 18px; accent-color: var(--navy);
-    cursor: pointer;
-  }
-  .cat-check-req  { accent-color: var(--red); }
-  .cat-check-hide { accent-color: #888; }
-  .catsel-error {
-    display: none; margin-top: 10px;
-    background: #fff0f0; border: 2px solid var(--red);
-    border-radius: 8px; padding: 8px 12px;
-    font-size: .82rem; font-weight: 700; color: var(--red);
-  }
-  .catsel-error.show { display: block; }
 
   /* ── GAME CODE ── */
   .game-code-bar {
@@ -1001,23 +1000,19 @@
     <span class="catsel-toggle" id="catselToggle">▼ Show</span>
   </div>
   <div class="catsel-body collapsed" id="catselBody">
-    <div class="catsel-hint">Mark categories as <strong>Required</strong> (always on the card) or <strong>Hidden</strong> (never on the card). Max 5 required. Must leave at least 5 available.</div>
+    <div class="catsel-hint">Slide each category toward 🟢 <strong>Required</strong> to guarantee it appears, toward 🔴 <strong>Hidden</strong> to exclude it, or leave in the middle to weight it more or less likely. Max 5 required; must keep at least 5 available.</div>
+    <div class="catsel-legend">
+      <span class="leg-hidden">🔴 Hidden</span>
+      <span class="leg-neutral">⚫ Normal</span>
+      <span class="leg-required">🟢 Required</span>
+    </div>
     <div class="catsel-counters">
       <div class="catsel-counter">Required: <span id="reqCount">0</span> / 5</div>
       <div class="catsel-counter">Hidden: <span id="hidCount">0</span></div>
-      <div class="catsel-counter">Available: <span id="availCount">23</span></div>
+      <div class="catsel-counter">Available: <span id="availCount">24</span></div>
     </div>
     <div class="catsel-error" id="catselError"></div>
-    <table class="catsel-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>⭐ Required</th>
-          <th>🚫 Hidden</th>
-        </tr>
-      </thead>
-      <tbody id="catselRows"></tbody>
-    </table>
+    <div id="catselRows"></div>
   </div>
 </div>
 
@@ -1055,16 +1050,17 @@ const CATEGORIES = {
   "Sports":             ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock","Tennis racket","Easton hockey stick","Viper or Rawlings baseball bat","Croquet set","Bocce ball set","Horseshoes set","Wilson volleyball","Pink or Green yoga mat","Resistance bands","Pull up bar","Ab roller","Kettlebell","Exercise bike","Hanging punching bag","Kayak paddle","Hiking poles","BMX bike","Adult bike helmet","Roller blades","Multi-color bowling shoes","E-bike","Olympic souvenir","Signed sports item","Little League uniform","Golf bag (full set)","Snorkel set (mask + fins)","Dart board"],
   "BrickaBrack":        ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console","Hamilton or Franklin Mint collectible plate","Crystal paperweight","Vintage advertising tin","Ceramic or plastic fruit","Driftwood art","Macrame wall hanging","Colored glass bottles","Stained glass panel","Bobblehead (not Funko Pop)","Troll doll","Dashboard hula girl","Lava lamp","Frog statue (stone or metal)","Lucky cat (Maneki-neko)","Precious Moments figurine","Signed pottery","Vintage souvenir spoon","Souvenir thimble","Political button or bumper sticker","Vintage clock (not working)","Barometer","Kaleidoscope","Music box (working)","Bookend set"],
   "Old Tech":           ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine","Pager or beeper","Answering machine (standalone)","Walkie talkies","CB radio","Satellite phone","Nokia brick phone","Film camera (35mm)","Disposable camera (unused)","Slide projector","VHS camcorder","Boom box","iPod (original or mini)","Karaoke machine (old)","Original Game Boy Color","Sega Genesis or Super Nintendo","IBM ThinkPad (old)","Zip drive","Electric typewriter","Adding machine","Garmin or TomTom GPS","TI-83, TI-84, or TI-86 calculator"],
-  "Media":              ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)"],
-  "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle"],
-  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Bird Decoys","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Chainsaw","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet"],
-  "Old Folks":          ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager"],
-  "Musical Instrument": ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine"],
-  "Misc.":              ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys"],
-  "Alaskana":           ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item"],
+  "Media":              ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)","Choose Your Own Adventure book","Cookbook (celebrity chef)","Romance novel (Fabio cover)","Hardy Boys or Nancy Drew","Encyclopedia Britannica set","Readers Digest","Chiltons auto repair manual","8-track tape","Mixed tape (handwritten label)","Full TV series on DVD","Sealed vinyl (never opened)","Disney VHS (black diamond edition)","Betamax tape","LaserDisc","3D Blu-Ray","Movie poster (original)","National Geographic collection","Life magazine (vintage)","Sports Illustrated Swimsuit edition","Rolling Stone (vintage)","Marvel comic book","Archie comic book","Vintage catalog (Sears, JC Penney)","Vintage newspaper (major headline)","PC game in box","Bible with pictures","Pulp Fiction on DVD","Book with 600-800 pages","Reba or Dolly cassette","Farmers Almanac","Medical or law reference book","Biography of a US President","Art instruction book"],
+  "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle","Knitting needles and pattern","Cross stitch kit or finished piece","Fabric collection","Cricut machine or cartridge","Rubber stamp collection","Scrapbook (completed)","Pressed flower art","Candle collection","Decorative wreath","Floral arrangement (silk)","Decorative letters (wall)","Mason jar collection","Farmhouse sign","Chalk painted item","Burlap decoration","Woman's perfume","Hat box","Jewelry box","Brooch or lapel pin","Tea set (complete)","Cake decorating kit","Cookie jar","Vintage recipe box","Pie server set","Punch bowl set","Personalized cutting board","Item with Oprah Winfrey on it","Longaberger basket","Vera Bradley bag","Mary Kay or Avon item","PartyLite candle (in box)","Yankee Candle (orange)","Thirty-One bag or organizer","Tupperware (vintage harvest gold)","Scentsy warmer or wax","Pampered Chef stoneware","Tastefully Simple item","Princess House crystal or cookware","Home Interiors figurine or picture","Bath & Body Works gift set","Coach purse or wallet","Dooney & Bourke bag","Willow Tree figurine","Swarovski crystal piece"],
+  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Bird Decoys","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet","Socket wrench set","Level (48 inch or larger)","Fishing net or gaff","Ammo box (empty)","Canadian Goose decoy","Jack stands","Creeper (mechanic's rolling board)","Jumper cables","Battery charger","Smoker (any size)","Cooler (50+ gallon)","ATV or dirt bike gear","Weight bench","Archery target","Billiard cue","Poker chip set (300+ chips)","Bar sign (neon or metal)","Wall mount bottle opener","5+ shot glasses at one sale","Sports bar stool","Foosball table","Air hockey table","Signed sports photo","Chainsaw","Shaving kit (straight razor)","Cigar box or humidor","Military memorabilia","Pocket watch collection","Dickies work pants","Hard hat","Blaze orange vest","Cowboy hat","Suspenders (wide)","Letterman jacket","Hawaiian shirt (loud pattern)"],
+  "Old Folks":          ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager","Shower chair or bench","Grabber or reacher tool","Hearing aid case","Wheelchair (manual)","Knee scooter","Compression socks","Velcro shoes","Men's cardigan sweater","Large floral brooch","Bifocal glasses (extra pair)","Large button telephone","TV tray set","Magnifying glass (large)","Letter opener","Sewing basket","Big Band vinyl","Norman Rockwell item","Precious Moments figurine","Jello mold","Church cookbook","Pressure cooker (non-electric)","Cat or frog figurine collection","Ceramic animal cookie jar","Scrapbook with old news clippings","Arm chair covers (antimacassar)","Clear plastic table cloth","Pill crusher or splitter","Coffee tin","Paint by numbers (completed)","Macrame wall hanging","Velvet painting","Wall mounted clock (ornate)","Crocheted afghan","Latch hook rug (completed)","Embroidered pillowcase set"],
+  "Musical Instrument": ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine","Ukulele","Banjo","Xylophone or marimba","Castanets","Triangle","Taiko drum","Toy piano","MIDI controller","Guitar case (hardshell)","Instrument stand","Metronome","Tuning fork","Drum throne","Instrument cable collection","Microphone (handheld)","Guitar tablature book","Piano lesson book","Reel to reel recorder","Guitar strap (decorative)","Drum sticks","Vintage music poster"],
+  "Misc.":              ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys","Doorbell (wired or wireless)","Door knocker","House numbers (metal)","Curtain rods","Window blinds","Throw rug","Welcome mat","Tension rod","Light switch plates","Drawer pulls or cabinet knobs","Bird bath","Wind chime","Sprinkler head or system","Garden hose","Wheelbarrow","Stepping stones","Outdoor thermometer","Rain gauge","Flag pole","Yard ornament (metal)","Geode or crystal","Arrowhead collection","Yearbook","Paint (partial can)","Door handle or knob set","Luggage tag","Dry erase board","Mail sorter","Umbrella stand","Shoe horn","Lint roller (jumbo)"],
+  "Alaskana":           ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item","Kuspuk (Alaska Native dress)","Qiviut item (musk ox wool)","Ivory carving","Totem pole","Bear paw print item","Moose antler (shed)","Whale bone carving","Salmon item (image or figure)","Dall sheep horn","Snowmachine parts or gear","Dog mushing gear","Ice fishing auger","Bunny boots","Item with Alaska Airlines logo","Mt. Marathon item","Denali or Mt. McKinley item","Alaska license plate","Alaska map (vintage)","Aurora borealis photograph","Alaskan postcard","Alaska Railroad print","North to Alaska item"],
   "Items in Free Box":  ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap","Remote control (no batteries)","Instruction manual (no product)","Partially used candle","McDonald's toy","Used gift wrap or ribbon","Foam pool noodle","Trophy with someone else's name","Framed photo of strangers","Hotel toiletries (unopened)","Foreign coin","Partially used spice jar","Reusable grocery bag (worn)","Bread bag clips","Takeout menu collection","Paper plates (partial pack)","Non-spice food item","WD-40","Pine Sol","Cassette tape with no label","Empty spray bottle","Stained throw pillow","Novelty pen that doesn't write","Airport luggage tag","Swag from a defunct business","Armor-All","Duct Tape","Kids meal toy (not McDonald's)","Plastic bead necklace","Item with a feather on it"],
-  "Boy Scouts":         ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map"],
-  "Rob's 50th":         ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD"]
+  "Scouting":         ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map","Pinewood Derby car or kit","2 person tent","Girl Scout uniform","Scout sash with badges","Heritage Girls or Camp Fire item","Bear canister","Headlamp","Tarp or emergency blanket","Water filter or purification tablets","Multi-tool","Hatchet or camp axe","Folding camp saw","Fire starter kit","Camp chair (small folding)","Dry bags or stuff sacks","Carabiner","Paracord (spool)","Orienteering compass","Wilderness survival guide","Plant identification guide","Bird identification guide","Camping cookbook","Scout neckerchief slide","Popcorn tin","Cookie box","Wood burning kit or project","Friendship bracelet","Nature collection (rocks, leaves, flowers)","Merit badge pamphlet"],
+  "Home Improvement":   ["Shower head (new in box)","Faucet (new in box)","Pipe wrench","Teflon tape","Toilet flapper or fill valve","PVC pipe","Wire nuts","Electrical conduit","Junction box","Extension cord (heavy duty)","Voltage meter","Dimmer switch","GFCI outlet (new)","Electrical tape (not black)","Circuit breaker","Loose tile","Laminate flooring (partial box)","Paint tray and liners","Paint sprayer","Caulking gun","Framing square","Nail gun","Miter box (manual)","Bag of bolts or screws","Picture hanging hardware","Window screen repair kit","Tape measure (25ft+)","Laser level","Chalk snap line","Plumb bob","Safety glasses","Sawhorses (pair under $15)","Sandpaper","Door knob set (new in package)","Outdoor light fixture","Solar panel","Shingles (partial bundle)","Cabinet hinges (new pack)","Drawer slides (set)","Wood filler"],
+  "Rob's 50th":         ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD","Item with Vintage label on it","Retirement themed item"]
 };
 
 const ALL_CATS   = Object.keys(CATEGORIES);
@@ -1459,100 +1455,157 @@ function clearGameCode() {
 }
 
 /* ── CARD GENERATION ── */
+/* ── SLIDER CONFIG ── */
+// 7 positions: 1=Hidden, 2=Unlikely, 3=Rarely, 4=Normal, 5=Often, 6=Likely, 7=Required
+const SLIDER_LABELS  = ['Hidden', 'Unlikely', 'Rarely', 'Normal', 'Often', 'Likely', 'Required'];
+const SLIDER_WEIGHTS = [0, 1, 2, 3, 5, 8, Infinity]; // Infinity = guaranteed
+const SLIDER_COLORS  = [
+  '#c0392b', // 1 Hidden     - red
+  '#e67e22', // 2 Unlikely   - orange-red
+  '#f39c12', // 3 Rarely     - amber
+  '#888888', // 4 Normal     - gray
+  '#27ae60', // 5 Often      - light green
+  '#1e8449', // 6 Likely     - green
+  '#145a32', // 7 Required   - dark green
+];
+
+function getSliderVal(safe) {
+  const el = document.getElementById(`slider_${safe}`);
+  return el ? parseInt(el.value) : 4;
+}
+
 function getCatPrefs() {
   const required = [], hidden = [];
   ALL_CATS.forEach(cat => {
     const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const reqEl  = document.getElementById(`req_${safe}`);
-    const hideEl = document.getElementById(`hide_${safe}`);
-    if (reqEl  && reqEl.checked)  required.push(cat);
-    if (hideEl && hideEl.checked) hidden.push(cat);
+    const val = getSliderVal(safe);
+    if (val === 7) required.push(cat);
+    if (val === 1) hidden.push(cat);
   });
   return { required, hidden };
 }
 
+function getCatWeights() {
+  const weights = {};
+  ALL_CATS.forEach(cat => {
+    const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
+    const val = getSliderVal(safe);
+    weights[cat] = SLIDER_WEIGHTS[val - 1];
+  });
+  return weights;
+}
+
 function buildNewCardData() {
   const { required, hidden } = getCatPrefs();
-  const available = ALL_CATS.filter(c => !hidden.includes(c) && !required.includes(c));
+  const weights = getCatWeights();
+
+  // Build weighted pool (exclude hidden and required)
+  const pool = [];
+  ALL_CATS.forEach(cat => {
+    if (hidden.includes(cat) || required.includes(cat)) return;
+    const w = weights[cat];
+    if (w > 0) {
+      for (let i = 0; i < w; i++) pool.push(cat);
+    }
+  });
 
   // Use seeded shuffle if a game code is active, else random
-  const rng      = currentSeed !== null ? mulberry32(currentSeed) : null;
-  const sfn      = (arr) => rng ? seededShuffle(arr, rng) : shuffle(arr);
+  const rng = currentSeed !== null ? mulberry32(currentSeed) : null;
+  const sfn = (arr) => rng ? seededShuffle(arr, rng) : shuffle(arr);
 
-  const needed = 5 - required.length;
-  const fillers = sfn(available).slice(0, needed);
-  const cats    = sfn([...required, ...fillers]);
-  const items   = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
+  const needed  = 5 - required.length;
+  const shuffled = sfn(pool);
+  // Pick unique categories from weighted pool
+  const seen = new Set(required);
+  const fillers = [];
+  for (const cat of shuffled) {
+    if (!seen.has(cat)) { seen.add(cat); fillers.push(cat); }
+    if (fillers.length >= needed) break;
+  }
+  const cats  = sfn([...required, ...fillers]);
+  const items = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
   return { categories: cats, items };
 }
 
-/* ── CATEGORY SELECTION ── */
-const CAT_SEL_KEY = 'gsb_catsel_v1';
+/* ── CATEGORY SELECTION (SLIDERS) ── */
+const CAT_SEL_KEY = 'gsb_catsel_v2';
 
 function buildCatSelRows() {
   const saved = loadCatSel();
-  const tbody = document.getElementById('catselRows');
-  tbody.innerHTML = '';
+  const container = document.getElementById('catselRows');
+  container.innerHTML = '';
+
   ALL_CATS.forEach(cat => {
-    const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const isReq  = saved.required.includes(cat);
-    const isHide = saved.hidden.includes(cat);
-    const tr = document.createElement('tr');
-    tr.id = `catrow_${safe}`;
-    if (isReq)  tr.classList.add('cat-required-row');
-    if (isHide) tr.classList.add('cat-hidden-row');
-    tr.innerHTML = `
-      <td>${cat}</td>
-      <td><input type="checkbox" class="cat-check cat-check-req" id="req_${safe}" ${isReq ? 'checked' : ''} onchange="onCatPrefChange('${safe}','req')"></td>
-      <td><input type="checkbox" class="cat-check cat-check-hide" id="hide_${safe}" ${isHide ? 'checked' : ''} onchange="onCatPrefChange('${safe}','hide')"></td>
+    const safe    = cat.replace(/[^a-zA-Z0-9]/g, '_');
+    const initVal = saved[safe] !== undefined ? saved[safe] : 4;
+
+    const row = document.createElement('div');
+    row.className = 'catsel-row';
+    row.id = `catrow_${safe}`;
+
+    // Build gradient background for slider track
+    const gradStops = SLIDER_COLORS.map((c, i) => `${c} ${i * 100/6}%`).join(', ');
+
+    row.innerHTML = `
+      <div class="catsel-cat-name">${cat}</div>
+      <input type="range" class="catsel-slider" id="slider_${safe}"
+        min="1" max="7" step="1" value="${initVal}"
+        style="background: linear-gradient(to right, ${gradStops});"
+        oninput="onSliderChange('${safe}', this.value)">
+      <div class="catsel-val-label" id="label_${safe}" style="color:${SLIDER_COLORS[initVal-1]}">${SLIDER_LABELS[initVal-1]}</div>
     `;
-    tbody.appendChild(tr);
+
+    applyRowStyle(row, initVal);
+    container.appendChild(row);
   });
+
   updateCatSelCounters();
 }
 
-function onCatPrefChange(safe, type) {
-  const reqEl  = document.getElementById(`req_${safe}`);
-  const hideEl = document.getElementById(`hide_${safe}`);
-  // Mutually exclusive: checking one unchecks the other
-  if (type === 'req'  && reqEl.checked)  hideEl.checked = false;
-  if (type === 'hide' && hideEl.checked) reqEl.checked  = false;
+function onSliderChange(safe, val) {
+  val = parseInt(val);
+  const label = document.getElementById(`label_${safe}`);
+  const row   = document.getElementById(`catrow_${safe}`);
+  const slider = document.getElementById(`slider_${safe}`);
 
-  const { required, hidden } = getCatPrefs();
-  const available = ALL_CATS.length - hidden.length;
+  label.textContent = SLIDER_LABELS[val - 1];
+  label.style.color = SLIDER_COLORS[val - 1];
+
   const errEl = document.getElementById('catselError');
 
-  if (required.length > 5) {
-    reqEl.checked = false;
-    errEl.textContent = '⚠️ You can only require up to 5 categories (one per BINGO column).';
+  // Validate required cap
+  const { required, hidden } = getCatPrefs();
+  if (val === 7 && required.length > 5) {
+    slider.value = 6; // snap back
+    label.textContent = SLIDER_LABELS[5];
+    label.style.color = SLIDER_COLORS[5];
+    errEl.textContent = '⚠️ Max 5 required categories (one per BINGO column).';
     errEl.classList.add('show');
     updateCatSelCounters();
     return;
   }
-  if (available < 5) {
-    hideEl.checked = false;
-    errEl.textContent = `⚠️ You must leave at least 5 categories available. Currently ${ALL_CATS.length - hidden.length + 1} would remain.`;
+
+  // Validate hidden minimum
+  const available = ALL_CATS.length - hidden.length;
+  if (val === 1 && available < 5) {
+    slider.value = 2; // snap back
+    label.textContent = SLIDER_LABELS[1];
+    label.style.color = SLIDER_COLORS[1];
+    errEl.textContent = `⚠️ Must keep at least 5 categories available.`;
     errEl.classList.add('show');
     updateCatSelCounters();
     return;
   }
 
   errEl.classList.remove('show');
-
-  // Update row styling
-  const safe2 = safe;
-  ALL_CATS.forEach(cat => {
-    const s = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const row = document.getElementById(`catrow_${s}`);
-    if (!row) return;
-    const r = document.getElementById(`req_${s}`);
-    const h = document.getElementById(`hide_${s}`);
-    row.classList.toggle('cat-required-row', r && r.checked);
-    row.classList.toggle('cat-hidden-row',   h && h.checked);
-  });
-
+  applyRowStyle(row, val);
   updateCatSelCounters();
   saveCatSel();
+}
+
+function applyRowStyle(row, val) {
+  row.classList.toggle('is-hidden',   val === 1);
+  row.classList.toggle('is-required', val === 7);
 }
 
 function updateCatSelCounters() {
@@ -1565,8 +1618,12 @@ function updateCatSelCounters() {
 
 function saveCatSel() {
   try {
-    const { required, hidden } = getCatPrefs();
-    localStorage.setItem(CAT_SEL_KEY, JSON.stringify({ required, hidden }));
+    const data = {};
+    ALL_CATS.forEach(cat => {
+      const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
+      data[safe] = getSliderVal(safe);
+    });
+    localStorage.setItem(CAT_SEL_KEY, JSON.stringify(data));
   } catch(e) {}
 }
 
@@ -1575,7 +1632,7 @@ function loadCatSel() {
     const raw = localStorage.getItem(CAT_SEL_KEY);
     if (raw) return JSON.parse(raw);
   } catch(e) {}
-  return { required: [], hidden: [] };
+  return {};
 }
 
 function toggleCatSel() {
