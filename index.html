@@ -1209,20 +1209,6 @@
         <span class="radio-text"><strong>4 Corners</strong> <span>— all four corner squares</span></span>
       </label>
     </div>
-    <!-- State Categories -->
-    <div class="option-group">
-      <div class="option-group-title">📍 Regional Categories</div>
-      <div class="option-group-desc">These categories are shown automatically based on your location. Enable manually if traveling or using a VPN.</div>
-      <label class="option-radio-row" for="optAlaskana">
-        <input type="checkbox" id="optAlaskana" onchange="toggleStateCategory('Alaskana', this.checked); saveOptions()">
-        <span class="radio-text"><strong>Alaskana</strong> <span>— auto-enabled in Alaska</span></span>
-      </label>
-      <label class="option-radio-row" for="optWashington">
-        <input type="checkbox" id="optWashington" onchange="toggleStateCategory('Washington (the good one)', this.checked); saveOptions()">
-        <span class="radio-text"><strong>Washington (the good one)</strong> <span>— auto-enabled in Washington state</span></span>
-      </label>
-    </div>
-
     <!-- Revert to Defaults -->
     <div class="option-revert-wrap">
       <button class="option-revert-btn" onclick="askRevertDefaults()">↩ Revert to Defaults</button>
@@ -1334,7 +1320,6 @@ const ALL_CATS_BASE = [
   "Rob's 50th"
 ];
 
-// Working copy — state-specific categories filtered by geolocation
 const ALL_CATS = [...ALL_CATS_BASE];
 const COL_KEYS   = ['b','i','n','g','o'];
 const LETTERS    = ['B','I','N','G','O'];
@@ -1794,72 +1779,38 @@ function clearGameCode() {
 /* ── CARD GENERATION ── */
 /* ── GEOLOCATION CATEGORY FILTERING ── */
 
-// Map of state-specific categories to the US states they belong to
 const STATE_CATEGORIES = {
   'Alaskana':                  ['Alaska'],
   'Washington (the good one)': ['Washington'],
 };
 
-// Which state categories are currently unlocked for this user
-let unlockedStateCategories = new Set();
+let detectedState = null;
 
 async function detectUserState() {
   try {
-    const res  = await fetch('https://ipapi.co/json/');
+    const res  = await fetch('https://freeipapi.com/api/json');
     const data = await res.json();
-    const region = (data.region || '').trim();
-    console.log('Detected region:', region);
-    applyStateCategories(region);
+    detectedState = (data.regionName || '').trim();
+    console.log('Detected region:', detectedState);
   } catch(e) {
-    console.log('Geolocation failed, showing all state categories:', e);
-    // On failure, show all state categories so nobody is locked out
-    Object.keys(STATE_CATEGORIES).forEach(cat => unlockedStateCategories.add(cat));
-    applyStateCategories(null);
+    console.log('Geolocation failed:', e);
+    detectedState = null;
   }
+  // Rebuild catsel rows now that we know the state
+  if (document.getElementById('catselRows')) buildCatSelRows();
 }
 
-function applyStateCategories(region) {
-  // Determine which state categories to unlock
-  Object.entries(STATE_CATEGORIES).forEach(([cat, states]) => {
-    if (!region || states.includes(region)) {
-      unlockedStateCategories.add(cat);
-    }
-  });
-
-  // Rebuild ALL_CATS to only include unlocked state categories
-  rebuildAllCats();
-
-  // Rebuild catsel rows if already rendered
-  if (document.getElementById('catselRows').children.length > 0) {
-    buildCatSelRows();
-  }
-
-  console.log('Unlocked state categories:', [...unlockedStateCategories]);
+function getStateCategoryDefault(cat) {
+  // Returns the default slider value for a state category based on detected state
+  const states = STATE_CATEGORIES[cat];
+  if (!states) return 4; // not a state category — normal
+  if (!detectedState) return 1; // no detection — hide by default
+  return states.includes(detectedState) ? 4 : 1; // match = normal, no match = hidden
 }
 
-function rebuildAllCats() {
-  // Start with all non-state categories, then add unlocked state ones
-  const stateKeys = Object.keys(STATE_CATEGORIES);
-  const baseCategories = ALL_CATS_BASE.filter(c => !stateKeys.includes(c));
-  const stateCategories = ALL_CATS_BASE.filter(c =>
-    stateKeys.includes(c) && unlockedStateCategories.has(c)
-  );
-  // State categories go before Rob's 50th (always last)
-  const robsCat = "Rob's 50th";
-  const withoutRobs = [...baseCategories, ...stateCategories].filter(c => c !== robsCat);
-  ALL_CATS.length = 0;
-  withoutRobs.forEach(c => ALL_CATS.push(c));
-  if (ALL_CATS_BASE.includes(robsCat)) ALL_CATS.push(robsCat);
-}
-
-function toggleStateCategory(cat, enabled) {
-  if (enabled) {
-    unlockedStateCategories.add(cat);
-  } else {
-    unlockedStateCategories.delete(cat);
-  }
-  rebuildAllCats();
-  buildCatSelRows();
+function getDetectedStateName() {
+  if (!detectedState) return 'Unknown';
+  return detectedState;
 }
 
 // 7 positions: 1=Hidden, 2=Unlikely, 3=Rarely, 4=Normal, 5=Often, 6=Likely, 7=Required
@@ -1941,31 +1892,52 @@ function buildCatSelRows() {
   const container = document.getElementById('catselRows');
   container.innerHTML = '';
 
-  ALL_CATS.forEach(cat => {
-    const safe    = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const initVal = saved[safe] !== undefined ? saved[safe] : 4;
+  const stateKeys = Object.keys(STATE_CATEGORIES);
+  const standardCats = ALL_CATS.filter(c => !stateKeys.includes(c));
+  const stateCats    = ALL_CATS.filter(c =>  stateKeys.includes(c));
 
-    const row = document.createElement('div');
-    row.className = 'catsel-row';
-    row.id = `catrow_${safe}`;
+  // Render standard categories
+  standardCats.forEach(cat => renderCatRow(cat, saved, container));
 
-    // Build gradient background for slider track
-    const gradStops = SLIDER_COLORS.map((c, i) => `${c} ${i * 100/6}%`).join(', ');
+  // Render STATE OPTIONS section
+  const divider = document.createElement('div');
+  divider.style.cssText = 'margin: 14px 0 8px; display:flex; align-items:center; gap:10px;';
+  divider.innerHTML = `
+    <div style="flex:1; height:1px; background:#ddd;"></div>
+    <span style="font-family:\'Fredoka One\',cursive; font-size:.78rem; color:#888; white-space:nowrap;">📍 STATE OPTIONS — Detected: <strong style="color:var(--navy)">${getDetectedStateName()}</strong></span>
+    <div style="flex:1; height:1px; background:#ddd;"></div>`;
+  container.appendChild(divider);
 
-    row.innerHTML = `
-      <div class="catsel-cat-name">${cat}</div>
-      <input type="range" class="catsel-slider" id="slider_${safe}"
-        min="1" max="7" step="1" value="${initVal}"
-        style="background: linear-gradient(to right, ${gradStops});"
-        oninput="onSliderChange('${safe}', this.value)">
-      <div class="catsel-val-label" id="label_${safe}" style="color:${SLIDER_COLORS[initVal-1]}">${SLIDER_LABELS[initVal-1]}</div>
-    `;
-
-    applyRowStyle(row, initVal);
-    container.appendChild(row);
+  // Render state categories with geolocation-aware defaults
+  stateCats.forEach(cat => {
+    const geoDefault = getStateCategoryDefault(cat);
+    renderCatRow(cat, saved, container, geoDefault);
   });
 
   updateCatSelCounters();
+}
+
+function renderCatRow(cat, saved, container, geoDefault) {
+  const safe    = cat.replace(/[^a-zA-Z0-9]/g, '_');
+  const initVal = saved[safe] !== undefined ? saved[safe] : (geoDefault !== undefined ? geoDefault : 4);
+
+  const row = document.createElement('div');
+  row.className = 'catsel-row';
+  row.id = `catrow_${safe}`;
+
+  const gradStops = SLIDER_COLORS.map((c, i) => `${c} ${i * 100/6}%`).join(', ');
+
+  row.innerHTML = `
+    <div class="catsel-cat-name">${cat}</div>
+    <input type="range" class="catsel-slider" id="slider_${safe}"
+      min="1" max="7" step="1" value="${initVal}"
+      style="background: linear-gradient(to right, ${gradStops});"
+      oninput="onSliderChange('${safe}', this.value)">
+    <div class="catsel-val-label" id="label_${safe}" style="color:${SLIDER_COLORS[initVal-1]}">${SLIDER_LABELS[initVal-1]}</div>
+  `;
+
+  applyRowStyle(row, initVal);
+  container.appendChild(row);
 }
 
 function onSliderChange(safe, val) {
