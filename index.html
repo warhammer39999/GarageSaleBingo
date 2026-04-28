@@ -913,6 +913,56 @@
     transition: opacity .3s; white-space: nowrap;
   }
   .bingo-toast.show { opacity: 1; }
+
+  /* ── CHAT ── */
+  .mp-chat { margin-top: 14px; }
+  .mp-chat-title {
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    color: var(--navy); margin-bottom: 8px;
+  }
+  .mp-chat-messages {
+    height: 160px; overflow-y: auto;
+    background: var(--cream); border: 2px solid #e0e0e0;
+    border-radius: 10px; padding: 8px 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    scroll-behavior: smooth;
+  }
+  .mp-chat-msg {
+    font-size: .82rem; line-height: 1.4;
+    word-break: break-word;
+  }
+  .mp-chat-msg .msg-name {
+    font-weight: 800; color: var(--navy); margin-right: 4px;
+  }
+  .mp-chat-msg.msg-me .msg-name { color: var(--blue); }
+  .mp-chat-msg.msg-system {
+    color: #888; font-style: italic; font-size: .75rem; text-align: center;
+  }
+  .mp-chat-input-row {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+  .mp-chat-input {
+    flex: 1; font-family: 'Nunito', sans-serif; font-weight: 600;
+    font-size: .9rem; padding: 8px 12px;
+    border: 2px solid var(--navy); border-radius: 8px; outline: none;
+  }
+  .mp-chat-input:focus { border-color: var(--blue); }
+  .mp-chat-send {
+    font-family: 'Permanent Marker', cursive; font-size: .9rem;
+    padding: 8px 16px; background: var(--blue); color: white;
+    border: 3px solid var(--navy); border-radius: 10px; cursor: pointer;
+    box-shadow: 3px 3px 0 var(--navy);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .mp-chat-send:hover { background: #0d6e8f; }
+  .mp-chat-send:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
+  /* Dark mode chat */
+  body.dark-mode .mp-chat-messages { background: #0f3460; border-color: #4a4a6a; }
+  body.dark-mode .mp-chat-msg .msg-name { color: #c8c8e0; }
+  body.dark-mode .mp-chat-msg { color: #c8c8e0; }
+  body.dark-mode .mp-chat-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .mp-chat-send { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
+  body.dark-mode .mp-chat-title { color: #c8c8e0; }
 </style>
 </head>
 <body>
@@ -983,6 +1033,17 @@
       </div>
       <div class="mp-scoreboard-title">🏆 Live Scores</div>
       <div class="mp-players" id="mpPlayers"></div>
+
+      <!-- Chat -->
+      <div class="mp-chat">
+        <div class="mp-chat-title">💬 Chat</div>
+        <div class="mp-chat-messages" id="mpChatMessages"></div>
+        <div class="mp-chat-input-row">
+          <input class="mp-chat-input" id="mpChatInput" placeholder="Say something… 😄" maxlength="120"
+            onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button class="mp-chat-send" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -2246,7 +2307,7 @@ try {
 /* ── SERVICE WORKER (PWA) ── */
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'yardingo-v1';
+    const CACHE = 'yardingo-v2';
     const OFFLINE_URL = '/GarageSaleBingo/';
 
     self.addEventListener('install', e => {
@@ -2265,6 +2326,13 @@ if ('serviceWorker' in navigator) {
     });
 
     self.addEventListener('fetch', e => {
+      const url = e.request.url;
+      // Never intercept API calls, only same-origin navigation
+      if (url.includes('supabase.co')) return;
+      if (url.includes('googleapis.com')) return;
+      if (url.includes('jsdelivr.net')) return;
+      if (url.includes('cdnjs.cloudflare.com')) return;
+      if (e.request.method !== 'GET') return;
       if (e.request.mode === 'navigate') {
         e.respondWith(
           fetch(e.request).catch(() => caches.match(OFFLINE_URL))
@@ -2337,12 +2405,13 @@ async function mpJoin() {
 
   try {
     // Check for existing player with same name in this game
-    const { data: existing } = await sb
+    const existingRes = await sb
       .from('game_players')
       .select('*')
       .eq('game_code', gameCode)
       .eq('player_name', name)
       .maybeSingle();
+    const existing = existingRes.data;
 
     if (existing) {
       // Offer to resume
@@ -2353,11 +2422,13 @@ async function mpJoin() {
         mpPlayer   = { id: existing.id, name, game_code: gameCode };
         try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
         mpSubscribe(gameCode);
+        subscribeChatChannel(gameCode);
         document.getElementById('mpJoinArea').style.display   = 'none';
         document.getElementById('mpActiveArea').style.display = 'block';
         document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
         document.getElementById('mpActiveCode').textContent    = gameCode;
         await mpLoadPlayers(gameCode);
+        await loadChatHistory(gameCode);
         // Sync current score immediately
         const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
         const bingos = Math.floor(score);
@@ -2370,23 +2441,25 @@ async function mpJoin() {
     }
 
     // No duplicate — upsert session and insert new player
-    await sb.from('game_sessions').upsert({ code: gameCode }, { onConflict: 'code' });
+    try { await sb.from('game_sessions').upsert({ code: gameCode }, { onConflict: 'code' }); } catch(e) {}
 
     const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-    const { data, error } = await sb.from('game_players').insert({
+    const res = await sb.from('game_players').insert({
       game_code:   gameCode,
       player_name: name,
       score:       score,
       bingos:      0
     }).select().single();
 
-    if (error) throw error;
+    if (res.error) throw new Error(res.error.message || 'Could not join game');
+    const data = res.data;
 
     mpPlayerId = data.id;
     mpPlayer   = { id: data.id, name, game_code: gameCode };
     try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
 
     mpSubscribe(gameCode);
+    subscribeChatChannel(gameCode);
 
     document.getElementById('mpJoinArea').style.display   = 'none';
     document.getElementById('mpActiveArea').style.display = 'block';
@@ -2394,9 +2467,12 @@ async function mpJoin() {
     document.getElementById('mpActiveCode').textContent    = gameCode;
 
     await mpLoadPlayers(gameCode);
+    await loadChatHistory(gameCode);
+    appendSystemMessage(`${name} joined the game`);
 
   } catch(e) {
-    setMpStatus('Connection failed: ' + e.message, 'error');
+    const msg = (e && e.message) ? e.message : String(e);
+    setMpStatus('Connection failed: ' + msg, 'error');
   }
 }
 
@@ -2491,6 +2567,7 @@ async function mpLeave() {
   if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
   if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
   if (mpReconnectTimeout) { clearTimeout(mpReconnectTimeout); mpReconnectTimeout = null; }
+  clearChat();
   mpPlayerId = null;
   mpPlayer   = null;
   document.getElementById('mpJoinArea').style.display   = 'block';
@@ -2512,6 +2589,83 @@ function showBingoToast(msg) {
   toast.textContent = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+/* ── CHAT ── */
+let chatChannel = null;
+
+async function sendChatMessage() {
+  if (!sb || !mpPlayerId || !mpPlayer) return;
+  const input = document.getElementById('mpChatInput');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  await sb.from('game_messages').insert({
+    game_code:   mpPlayer.game_code,
+    player_name: mpPlayer.name,
+    message:     msg
+  });
+}
+
+function subscribeChatChannel(gameCode) {
+  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
+
+  chatChannel = sb.channel(`chat-${gameCode}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'game_messages'
+    }, payload => {
+      if (payload.new && payload.new.game_code === gameCode) {
+        appendChatMessage(payload.new);
+      }
+    })
+    .subscribe();
+}
+
+async function loadChatHistory(gameCode) {
+  if (!sb) return;
+  const { data } = await sb
+    .from('game_messages')
+    .select('*')
+    .eq('game_code', gameCode)
+    .order('created_at', { ascending: true })
+    .limit(50);
+  if (data) data.forEach(appendChatMessage);
+}
+
+function appendChatMessage(row) {
+  const container = document.getElementById('mpChatMessages');
+  if (!container) return;
+  const isMe = row.player_name === (mpPlayer && mpPlayer.name);
+  const div  = document.createElement('div');
+  div.className = `mp-chat-msg${isMe ? ' msg-me' : ''}`;
+  div.innerHTML = `<span class="msg-name">${row.player_name}:</span>${escapeHtml(row.message)}`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendSystemMessage(msg) {
+  const container = document.getElementById('mpChatMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'mp-chat-msg msg-system';
+  div.textContent = msg;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function clearChat() {
+  const container = document.getElementById('mpChatMessages');
+  if (container) container.innerHTML = '';
+  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
 }
 </script>
 </body>
