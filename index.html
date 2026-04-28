@@ -1235,6 +1235,9 @@
     </div>
     <div class="catsel-error" id="catselError"></div>
     <div id="catselRows"></div>
+    <div class="option-revert-wrap" style="margin-top:14px;">
+      <button class="option-revert-btn" onclick="resetCatSel()">↩ Reset Categories to Default</button>
+    </div>
   </div>
 </div>
 
@@ -1480,9 +1483,8 @@ function playBingoSound() {
 }
 
 /* ── CONFETTI ── */
-let confettiParticles = [];
-let confettiRAF = null;
-
+const MAX_CONFETTI_BURSTS = 5;
+let confettiBursts = [];
 const CONFETTI_COLORS = ['#e63946','#ffd166','#06d6a0','#118ab2','#7b2d8b','#f4a261','#ffffff'];
 
 function celebrate() {
@@ -1528,14 +1530,17 @@ function launchConfetti() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
+  const duration = 4000;
 
-  // Cancel any existing animation
-  if (confettiRAF) { cancelAnimationFrame(confettiRAF); confettiRAF = null; }
+  // If at max bursts, drop the oldest
+  if (confettiBursts.length >= MAX_CONFETTI_BURSTS) {
+    confettiBursts.shift();
+  }
 
-  // Spawn 180 particles from top
-  confettiParticles = [];
-  for (let i = 0; i < 180; i++) {
-    confettiParticles.push({
+  // Spawn 150 particles for this burst
+  const particles = [];
+  for (let i = 0; i < 150; i++) {
+    particles.push({
       x:     Math.random() * canvas.width,
       y:     -10 - Math.random() * 100,
       w:     6 + Math.random() * 8,
@@ -1545,50 +1550,57 @@ function launchConfetti() {
       rotV:  (Math.random() - 0.5) * 0.2,
       vx:    (Math.random() - 0.5) * 3,
       vy:    2 + Math.random() * 4,
-      alpha: 1,
       shape: Math.random() > 0.5 ? 'rect' : 'circle',
     });
   }
 
-  const startTime = performance.now();
-  const duration  = 4000; // 4 seconds
+  const burst = { particles, startTime: performance.now(), done: false };
+  confettiBursts.push(burst);
+  let rafId = null;
 
   function frame(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const elapsed = now - startTime;
-    const fade    = Math.max(0, 1 - (elapsed - duration * 0.6) / (duration * 0.4));
 
-    confettiParticles.forEach(p => {
-      p.x   += p.vx;
-      p.y   += p.vy;
-      p.rot += p.rotV;
-      p.vy  += 0.08; // gravity
-      p.vx  *= 0.99; // air resistance
+    // Draw all active bursts
+    confettiBursts.forEach(b => {
+      if (b.done) return;
+      const elapsed = now - b.startTime;
+      const fade = Math.max(0, 1 - (elapsed - duration * 0.6) / (duration * 0.4));
 
-      ctx.save();
-      ctx.globalAlpha = p.alpha * fade;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      if (p.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      }
-      ctx.restore();
+      b.particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.rot += p.rotV;
+        p.vy += 0.08; p.vx *= 0.99;
+
+        ctx.save();
+        ctx.globalAlpha = fade;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        }
+        ctx.restore();
+      });
+
+      if (elapsed >= duration) b.done = true;
     });
 
-    if (elapsed < duration) {
-      confettiRAF = requestAnimationFrame(frame);
+    // Clean up finished bursts
+    confettiBursts = confettiBursts.filter(b => !b.done);
+
+    if (confettiBursts.length > 0) {
+      rafId = requestAnimationFrame(frame);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      confettiRAF = null;
     }
   }
 
-  confettiRAF = requestAnimationFrame(frame);
+  rafId = requestAnimationFrame(frame);
 }
 
 /* ── SEEDED RNG (Mulberry32) ── */
@@ -1885,6 +1897,55 @@ function loadCatSel() {
   return {};
 }
 
+function resetCatSel() {
+  document.getElementById('resetCatModal').style.display = 'flex';
+}
+function confirmResetCatSel() {
+  closeResetCatModal();
+  try { localStorage.removeItem(CAT_SEL_KEY); } catch(e) {}
+  buildCatSelRows();
+}
+function closeResetCatModal() {
+  document.getElementById('resetCatModal').style.display = 'none';
+}
+
+// Resume player modal
+let _resumePlayerData = null;
+function showResumePlayerModal(name, gameCode, existing) {
+  _resumePlayerData = { name, gameCode, existing };
+  document.getElementById('resumePlayerMsg').textContent =
+    `"${name}" is already in this game. Resume as this player?`;
+  document.getElementById('resumePlayerModal').style.display = 'flex';
+}
+async function confirmResumePlayer() {
+  closeResumePlayerModal();
+  if (!_resumePlayerData) return;
+  const { name, gameCode, existing } = _resumePlayerData;
+  _resumePlayerData = null;
+
+  mpPlayerId = existing.id;
+  mpPlayer   = { id: existing.id, name, game_code: gameCode };
+  try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
+  mpSubscribe(gameCode);
+  subscribeChatChannel(gameCode);
+  document.getElementById('mpJoinArea').style.display   = 'none';
+  document.getElementById('mpActiveArea').style.display = 'block';
+  document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
+  document.getElementById('mpActiveCode').textContent    = gameCode;
+  await mpLoadPlayers(gameCode);
+  await loadChatHistory(gameCode);
+  const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+  await mpUpdateScore(score, Math.floor(score));
+}
+function cancelResumePlayer() {
+  closeResumePlayerModal();
+  _resumePlayerData = null;
+  setMpStatus('Enter a different name to join.', 'error');
+}
+function closeResumePlayerModal() {
+  document.getElementById('resumePlayerModal').style.display = 'none';
+}
+
 function toggleCatSel() {
   const body   = document.getElementById('catselBody');
   const toggle = document.getElementById('catselToggle');
@@ -2122,7 +2183,39 @@ function initModals() {
   createModal('revertModal',     '↩ Revert to Defaults?', 'This will clear all your current options and restore the original settings. Are you sure?', 'Yes, revert!',    'confirmRevertDefaults()', 'closeRevertModal()');
   createModal('confirmCellModal','✅ Mark this square?',   '"<span id=\'confirmCellText\'></span>"',                                               'Yes, mark it!',   'confirmCellMark()',  'cancelCellMark()');
 
-  // Terms of Use modal
+  // Reset categories modal
+  if (!document.getElementById('resetCatModal')) {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'resetCatModal';
+    el.innerHTML = `
+      <div class="modal-box">
+        <h3>↩ Reset Categories?</h3>
+        <p>This will reset all category sliders back to Normal. Are you sure?</p>
+        <div class="modal-btns">
+          <button class="modal-btn modal-btn-yes" onclick="confirmResetCatSel()">Yes, reset!</button>
+          <button class="modal-btn modal-btn-no"  onclick="closeResetCatModal()">Cancel</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+
+  // Resume player modal
+  if (!document.getElementById('resumePlayerModal')) {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'resumePlayerModal';
+    el.innerHTML = `
+      <div class="modal-box">
+        <h3>👤 Name Already in Use</h3>
+        <p><span id="resumePlayerMsg"></span></p>
+        <div class="modal-btns">
+          <button class="modal-btn modal-btn-yes" onclick="confirmResumePlayer()">Yes, resume!</button>
+          <button class="modal-btn modal-btn-no"  onclick="cancelResumePlayer()">Use different name</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
   if (!document.getElementById('termsModal')) {
     const el = document.createElement('div');
     el.className = 'modal-overlay';
@@ -2517,30 +2610,8 @@ async function mpJoin() {
     const existing = existingRes.data;
 
     if (existing) {
-      // Offer to resume
-      const resume = confirm(`"${name}" is already in this game. Resume as this player?`);
-      if (resume) {
-        // Reuse existing row
-        mpPlayerId = existing.id;
-        mpPlayer   = { id: existing.id, name, game_code: gameCode };
-        try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
-        mpSubscribe(gameCode);
-        subscribeChatChannel(gameCode);
-        document.getElementById('mpJoinArea').style.display   = 'none';
-        document.getElementById('mpActiveArea').style.display = 'block';
-        document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
-        document.getElementById('mpActiveCode').textContent    = gameCode;
-        await mpLoadPlayers(gameCode);
-        await loadChatHistory(gameCode);
-        // Sync current score immediately
-        const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-        const bingos = Math.floor(score);
-        await mpUpdateScore(score, bingos);
-        return;
-      } else {
-        setMpStatus('Enter a different name to join.', 'error');
-        return;
-      }
+      showResumePlayerModal(name, gameCode, existing);
+      return;
     }
 
     // No duplicate — upsert session and insert new player
