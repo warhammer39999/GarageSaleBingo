@@ -1209,6 +1209,20 @@
         <span class="radio-text"><strong>4 Corners</strong> <span>— all four corner squares</span></span>
       </label>
     </div>
+    <!-- State Categories -->
+    <div class="option-group">
+      <div class="option-group-title">📍 Regional Categories</div>
+      <div class="option-group-desc">These categories are shown automatically based on your location. Enable manually if traveling or using a VPN.</div>
+      <label class="option-radio-row" for="optAlaskana">
+        <input type="checkbox" id="optAlaskana" onchange="toggleStateCategory('Alaskana', this.checked); saveOptions()">
+        <span class="radio-text"><strong>Alaskana</strong> <span>— auto-enabled in Alaska</span></span>
+      </label>
+      <label class="option-radio-row" for="optWashington">
+        <input type="checkbox" id="optWashington" onchange="toggleStateCategory('Washington (the good one)', this.checked); saveOptions()">
+        <span class="radio-text"><strong>Washington (the good one)</strong> <span>— auto-enabled in Washington state</span></span>
+      </label>
+    </div>
+
     <!-- Revert to Defaults -->
     <div class="option-revert-wrap">
       <button class="option-revert-btn" onclick="askRevertDefaults()">↩ Revert to Defaults</button>
@@ -1289,9 +1303,10 @@ const CATEGORIES = {
   "Sports":            ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock","Tennis racket","Easton hockey stick","Viper or Rawlings baseball bat","Croquet set","Bocce ball set","Horseshoes set","Wilson volleyball","Pink or Green yoga mat","Resistance bands","Pull up bar","Ab roller","Kettlebell","Exercise bike","Hanging punching bag","Kayak paddle","Hiking poles","BMX bike","Adult bike helmet","Roller blades","Multi-color bowling shoes","E-bike","Olympic souvenir","Signed sports item","Little League uniform","Golf bag (full set)","Snorkel set (mask + fins)","Dart board"],
   "Toys":            ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz","Etch A Sketch","Spirograph","View-Master","Lite-Brite","Silly Putty (in egg)","Slinky","Yo-Yo (Green or Wooden)","Jacks set","Marbles collection","Ken doll","Stretch Armstrong","Playmobil set","Fisher Price Little People set","Matchbox car","Erector Set","Lincoln Logs","Radio control car","Slot car track","Pogo stick","Hula hoop","Jump rope","Hacky sack","Tamagotchi","Hungry Hungry Hippos","Tech Deck (fingerboard)","M.U.S.C.L.E. or Micromachines","Bop It"],
   "Alaskana":            ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item","Kuspuk (Alaska Native dress)","Qiviut item (musk ox wool)","Ivory carving","Totem pole","Bear paw print item","Moose antler (shed)","Whale bone carving","Salmon item (image or figure)","Dall sheep horn","Snowmachine parts or gear","Dog mushing gear","Ice fishing auger","Bunny boots","Item with Alaska Airlines logo","Mt. Marathon item","Denali or Mt. McKinley item","Alaska license plate","Alaska map (vintage)","Aurora borealis photograph","Alaskan postcard","Alaska Railroad print","North to Alaska item"],
+  "Washington (the good one)":  ["Nirvana, Pearl Jam, or Soundgarden CD","Microsoft logo gear","Salmon or Orca item","Mariners branded baseball","Non-clothing Seahawks item","Item depicting Space Needle","Flannel shirt","Pike Place souvenir","Starbucks cup or mug","Frasier or Sleepless in Seattle DVD","Electric guitar or amp","Made in Washington item","Seattle tote or hat","Rock climbing gear","Casino item ending in -mish","Coleman, REI, or Thermarest sleeping bag","Blown glass","Kayak or canoe","Wooden, plastic, or ceramic apple","Sub Pop Records item","Kenny G item","Amazon smile logo item","Seattle SuperSonics item","Mt. Rainier item or photo","Olympic Peninsula souvenir","Bigfoot or Sasquatch item","Spotted owl item","Rainier or Olympia Beer glass","Fremont Troll (chia or sticker)","Seahawks Super Bowl XLVIII item","WSU scarf or earmuffs","Mt. St. Helens trinket","Item from Leavenworth","Washington state license plate","Lavender scented candle","Crabbing gear","Cartoon banana slug item","Stuffed sea otter or puffin","Plant for sale","Danner or Merrell boots","Rain gauge or umbrella","Twin Peaks on DVD"],
   "Rob's 50th":            ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD","Item with Vintage label on it","Retirement themed item"],
 };
-const ALL_CATS   = [
+const ALL_CATS_BASE = [
   "Appliances",
   "BrickaBrack",
   "Characters (Can be images)",
@@ -1315,8 +1330,12 @@ const ALL_CATS   = [
   "Sports",
   "Toys",
   "Alaskana",
+  "Washington (the good one)",
   "Rob's 50th"
 ];
+
+// Working copy — state-specific categories filtered by geolocation
+const ALL_CATS = [...ALL_CATS_BASE];
 const COL_KEYS   = ['b','i','n','g','o'];
 const LETTERS    = ['B','I','N','G','O'];
 
@@ -1483,8 +1502,8 @@ function playBingoSound() {
 }
 
 /* ── CONFETTI ── */
-const MAX_CONFETTI_BURSTS = 5;
-let confettiBursts = [];
+let confettiRAF = null;
+let confettiParticles = [];
 const CONFETTI_COLORS = ['#e63946','#ffd166','#06d6a0','#118ab2','#7b2d8b','#f4a261','#ffffff'];
 
 function celebrate() {
@@ -1530,17 +1549,11 @@ function launchConfetti() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
-  const duration = 4000;
 
-  // If at max bursts, drop the oldest
-  if (confettiBursts.length >= MAX_CONFETTI_BURSTS) {
-    confettiBursts.shift();
-  }
-
-  // Spawn 150 particles for this burst
-  const particles = [];
-  for (let i = 0; i < 150; i++) {
-    particles.push({
+  // Add 180 new particles to the pool (cap total at 900 = 5 bursts worth)
+  const newParticles = [];
+  for (let i = 0; i < 180; i++) {
+    newParticles.push({
       x:     Math.random() * canvas.width,
       y:     -10 - Math.random() * 100,
       w:     6 + Math.random() * 8,
@@ -1550,58 +1563,120 @@ function launchConfetti() {
       rotV:  (Math.random() - 0.5) * 0.2,
       vx:    (Math.random() - 0.5) * 3,
       vy:    2 + Math.random() * 4,
-      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+      life:  1.0,  // individual fade tracker
+      decay: 0.003 + Math.random() * 0.002,
     });
   }
 
-  const burst = { particles, startTime: performance.now(), done: false };
-  confettiBursts.push(burst);
-  let rafId = null;
+  // Cap total particles at 900
+  confettiParticles = [...confettiParticles, ...newParticles].slice(-900);
+
+  // If already animating, just adding particles is enough
+  if (confettiRAF) return;
+
+  const startTime = performance.now();
 
   function frame(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw all active bursts
-    confettiBursts.forEach(b => {
-      if (b.done) return;
-      const elapsed = now - b.startTime;
-      const fade = Math.max(0, 1 - (elapsed - duration * 0.6) / (duration * 0.4));
+    confettiParticles = confettiParticles.filter(p => p.life > 0);
 
-      b.particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        p.rot += p.rotV;
-        p.vy += 0.08; p.vx *= 0.99;
+    confettiParticles.forEach(p => {
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.rot += p.rotV;
+      p.vy  += 0.08;
+      p.vx  *= 0.99;
+      p.life -= p.decay;
 
-        ctx.save();
-        ctx.globalAlpha = fade;
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        if (p.shape === 'circle') {
-          ctx.beginPath();
-          ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        }
-        ctx.restore();
-      });
-
-      if (elapsed >= duration) b.done = true;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     });
 
-    // Clean up finished bursts
-    confettiBursts = confettiBursts.filter(b => !b.done);
-
-    if (confettiBursts.length > 0) {
-      rafId = requestAnimationFrame(frame);
+    if (confettiParticles.length > 0) {
+      confettiRAF = requestAnimationFrame(frame);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiRAF = null;
     }
   }
 
-  rafId = requestAnimationFrame(frame);
+  confettiRAF = requestAnimationFrame(frame);
 }
+
+
+function playBingoSound() {
+  if (!document.getElementById('optSound').checked) return;
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    // Fanfare: ascending arpeggio then held chord
+    const melody = [
+      { f: 523, t: 0,    dur: 0.15 },  // C5
+      { f: 659, t: 0.15, dur: 0.15 },  // E5
+      { f: 784, t: 0.30, dur: 0.15 },  // G5
+      { f: 1047,t: 0.45, dur: 0.5  },  // C6 held
+      { f: 784, t: 0.45, dur: 0.5  },  // G5 harmony
+      { f: 659, t: 0.45, dur: 0.5  },  // E5 harmony
+    ];
+    melody.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.35, start + 0.02);
+      gain.gain.setValueAtTime(0.35, start + dur - 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur);
+    });
+  } catch(e) {}
+}
+
+
+function playFanfare() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    // Big celebratory fanfare
+    const notes = [
+      { f: 523,  t: 0,    dur: 0.12 },
+      { f: 659,  t: 0.10, dur: 0.12 },
+      { f: 784,  t: 0.20, dur: 0.12 },
+      { f: 1047, t: 0.30, dur: 0.15 },
+      { f: 1319, t: 0.42, dur: 0.15 },
+      { f: 1047, t: 0.54, dur: 0.08 },
+      { f: 1319, t: 0.60, dur: 0.5  },
+      { f: 1047, t: 0.60, dur: 0.5  },
+      { f: 784,  t: 0.60, dur: 0.5  },
+    ];
+    notes.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.4, start + 0.02);
+      gain.gain.setValueAtTime(0.4, start + dur - 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur + 0.1);
+    });
+  } catch(e) {}
+}
+
 
 /* ── SEEDED RNG (Mulberry32) ── */
 function mulberry32(seed) {
@@ -1717,7 +1792,76 @@ function clearGameCode() {
 }
 
 /* ── CARD GENERATION ── */
-/* ── SLIDER CONFIG ── */
+/* ── GEOLOCATION CATEGORY FILTERING ── */
+
+// Map of state-specific categories to the US states they belong to
+const STATE_CATEGORIES = {
+  'Alaskana':                  ['Alaska'],
+  'Washington (the good one)': ['Washington'],
+};
+
+// Which state categories are currently unlocked for this user
+let unlockedStateCategories = new Set();
+
+async function detectUserState() {
+  try {
+    const res  = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    const region = (data.region || '').trim();
+    console.log('Detected region:', region);
+    applyStateCategories(region);
+  } catch(e) {
+    console.log('Geolocation failed, showing all state categories:', e);
+    // On failure, show all state categories so nobody is locked out
+    Object.keys(STATE_CATEGORIES).forEach(cat => unlockedStateCategories.add(cat));
+    applyStateCategories(null);
+  }
+}
+
+function applyStateCategories(region) {
+  // Determine which state categories to unlock
+  Object.entries(STATE_CATEGORIES).forEach(([cat, states]) => {
+    if (!region || states.includes(region)) {
+      unlockedStateCategories.add(cat);
+    }
+  });
+
+  // Rebuild ALL_CATS to only include unlocked state categories
+  rebuildAllCats();
+
+  // Rebuild catsel rows if already rendered
+  if (document.getElementById('catselRows').children.length > 0) {
+    buildCatSelRows();
+  }
+
+  console.log('Unlocked state categories:', [...unlockedStateCategories]);
+}
+
+function rebuildAllCats() {
+  // Start with all non-state categories, then add unlocked state ones
+  const stateKeys = Object.keys(STATE_CATEGORIES);
+  const baseCategories = ALL_CATS_BASE.filter(c => !stateKeys.includes(c));
+  const stateCategories = ALL_CATS_BASE.filter(c =>
+    stateKeys.includes(c) && unlockedStateCategories.has(c)
+  );
+  // State categories go before Rob's 50th (always last)
+  const robsCat = "Rob's 50th";
+  const withoutRobs = [...baseCategories, ...stateCategories].filter(c => c !== robsCat);
+  ALL_CATS.length = 0;
+  withoutRobs.forEach(c => ALL_CATS.push(c));
+  if (ALL_CATS_BASE.includes(robsCat)) ALL_CATS.push(robsCat);
+}
+
+function toggleStateCategory(cat, enabled) {
+  if (enabled) {
+    unlockedStateCategories.add(cat);
+  } else {
+    unlockedStateCategories.delete(cat);
+  }
+  rebuildAllCats();
+  buildCatSelRows();
+}
+
 // 7 positions: 1=Hidden, 2=Unlikely, 3=Rarely, 4=Normal, 5=Often, 6=Likely, 7=Required
 const SLIDER_LABELS  = ['Hidden', 'Unlikely', 'Rarely', 'Normal', 'Often', 'Likely', 'Required'];
 const SLIDER_WEIGHTS = [0, 1, 2, 3, 5, 8, Infinity]; // Infinity = guaranteed
@@ -2324,6 +2468,8 @@ function saveOptions() {
       largeText:  document.getElementById('optLargeText').checked,
       showScore:  document.getElementById('optShowScore').checked,
       freeSpace:  document.getElementById('optFreeSpace').checked,
+      alaskana:   document.getElementById('optAlaskana') ? document.getElementById('optAlaskana').checked : false,
+      washington: document.getElementById('optWashington') ? document.getElementById('optWashington').checked : false,
       gameMode:   getGameMode(),
       colMode:    getColMode(),
     }));
@@ -2344,6 +2490,8 @@ function applyOptionsToUI(o) {
   document.getElementById('optLargeText').checked  = !!o.largeText;
   document.getElementById('optShowScore').checked  = o.showScore !== undefined ? !!o.showScore : true;
   document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
+  if (document.getElementById('optAlaskana'))   document.getElementById('optAlaskana').checked   = !!o.alaskana;
+  if (document.getElementById('optWashington')) document.getElementById('optWashington').checked = !!o.washington;
   const modeVal = o.gameMode || '1line';
   const modeEl  = document.querySelector(`input[name="gameMode"][value="${modeVal}"]`);
   if (modeEl) modeEl.checked = true;
@@ -2442,8 +2590,8 @@ document.head.appendChild(qScript);
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 600;
 
 initModals();
-// Init Supabase after DOM is ready — constants are defined at top of script
 initSupabase();
+detectUserState(); // async — filters state categories by location
 
 // Pre-fill player name if previously used
 try {
