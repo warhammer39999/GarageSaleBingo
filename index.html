@@ -1787,16 +1787,43 @@ const STATE_CATEGORIES = {
 let detectedState = null;
 
 async function detectUserState() {
-  try {
-    const res  = await fetch('https://freeipapi.com/api/json');
-    const data = await res.json();
-    detectedState = (data.regionName || '').trim();
-    console.log('Detected region:', detectedState);
-  } catch(e) {
-    console.log('Geolocation failed:', e);
-    detectedState = null;
+  // Try multiple APIs in order until one works
+  const apis = [
+    async () => {
+      const r = await fetch('https://ipwho.is/');
+      const d = await r.json();
+      return d.region;
+    },
+    async () => {
+      const r = await fetch('https://ipapi.co/region/');
+      const t = await r.text();
+      // Returns plain text region name
+      return t.trim();
+    },
+    async () => {
+      const r = await fetch('https://ip.seeip.org/geoip');
+      const d = await r.json();
+      return d.region;
+    },
+  ];
+
+  for (const api of apis) {
+    try {
+      const region = await api();
+      if (region && region.length > 1 && !region.includes('<')) {
+        detectedState = region.trim();
+        console.log('Detected region:', detectedState);
+        if (document.getElementById('catselRows')) buildCatSelRows();
+        return;
+      }
+    } catch(e) {
+      // Try next API
+    }
   }
-  // Rebuild catsel rows now that we know the state
+
+  // All APIs failed
+  console.log('Geolocation failed — all APIs unreachable. State set to Unknown.');
+  detectedState = null;
   if (document.getElementById('catselRows')) buildCatSelRows();
 }
 
