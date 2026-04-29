@@ -1877,14 +1877,11 @@ async function fetchCategoriesFromDB(tier = 'full') {
         .select('category_id, item_text, sort_order')
         .order('sort_order')
         .range(from, from + pageSize - 1);
-      if (itemErr) throw itemErr;
       if (!page || page.length === 0) break;
       items = items.concat(page);
       if (page.length < pageSize) break;
       from += pageSize;
     }
-
-    if (itemErr) throw itemErr;
 
     // Build CATEGORIES-style object
     const categoriesObj = {};
