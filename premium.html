@@ -2777,62 +2777,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window
 initModals();
 initSupabase();
 detectUserState(); // async — filters state categories by location
-  initAuth(); // check auth session
-
-// Pre-fill player name if previously used
-try {
-  const savedName = localStorage.getItem('gsb_player_name');
-  if (savedName) {
-    const inp = document.getElementById('mpNameInput');
-    if (inp) inp.value = savedName;
-  }
-} catch(e) {}
-
-try {
-  // Render card first so DOM exists, then load options so applies work
-  if (loadState()) {
-    renderCard(false);
-  } else {
-    generateCard();
-  }
-  loadOptions();
-
-  // On first visit, set platform-specific defaults if no saved options exist
-  try {
-    const raw   = localStorage.getItem('gsb_options');
-    const saved = raw ? JSON.parse(raw) : {};
-    let changed = false;
-    if (saved.colMode === undefined) {
-      saved.colMode = 'horizontal';
-      const colEl = document.querySelector('input[name="colMode"][value="horizontal"]');
-      if (colEl) colEl.checked = true;
-      changed = true;
-    }
-    if (saved.showScore === undefined) {
-      saved.showScore = true;
-      document.getElementById('optShowScore').checked = true;
-      changed = true;
-    }
-    if (changed) saveOptions();
-  } catch(e) {}
-
-  applyShowScore();
-  applyFreeSpace();
-  applyColMode();
-  buildCatSelRows();
-
-  // Make sure room code is always visible — restore or create once
-  const roomCode = getOrCreateRoomCode();
-  const codeInp = document.getElementById('gameCodeInput');
-  if (codeInp && !codeInp.value) codeInp.value = roomCode;
-  // Don't set currentSeed from room code — seed is only for shared game joins
-} catch(e) {
-  // If anything in init fails, nuke localStorage and start fresh
-  console.error('Init error, resetting:', e);
-  try { localStorage.clear(); } catch(le) {}
-  generateCard();
-  buildCatSelRows();
-}
+initAuth(); // check auth session — app init happens inside initApp() after auth
 
 /* ── SERVICE WORKER (PWA) ── */
 if ('serviceWorker' in navigator) {
@@ -3296,6 +3241,57 @@ function initApp() {
     tierBadge.style.background = '#c0392b';
   } else {
     tierBadge.textContent = '🎮 Member';
+  }
+
+  // Pre-fill player name if previously used
+  try {
+    const savedName = localStorage.getItem('gsb_player_name');
+    if (savedName) {
+      const inp = document.getElementById('mpNameInput');
+      if (inp) inp.value = savedName;
+    }
+  } catch(e) {}
+
+  try {
+    if (loadState()) {
+      renderCard(false);
+    } else {
+      generateCard();
+    }
+    loadOptions();
+
+    try {
+      const raw   = localStorage.getItem('gsb_options');
+      const saved = raw ? JSON.parse(raw) : {};
+      let changed = false;
+      if (saved.colMode === undefined) {
+        saved.colMode = 'horizontal';
+        const colEl = document.querySelector('input[name="colMode"][value="horizontal"]');
+        if (colEl) colEl.checked = true;
+        changed = true;
+      }
+      if (saved.showScore === undefined) {
+        saved.showScore = true;
+        document.getElementById('optShowScore').checked = true;
+        changed = true;
+      }
+      if (changed) saveOptions();
+    } catch(e) {}
+
+    applyShowScore();
+    applyFreeSpace();
+    applyColMode();
+    buildCatSelRows();
+
+    const roomCode = getOrCreateRoomCode();
+    const codeInp = document.getElementById('gameCodeInput');
+    if (codeInp && !codeInp.value) codeInp.value = roomCode;
+
+  } catch(e) {
+    console.error('Init error, resetting:', e);
+    try { localStorage.clear(); } catch(le) {}
+    generateCard();
+    buildCatSelRows();
   }
 }
 
