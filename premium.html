@@ -1215,12 +1215,11 @@
 
     <!-- Join area (shown before connected) -->
     <div id="mpJoinArea">
-      <div class="mp-hint">Enter your name and your room code to play with friends in real time. Share your room code so others can join.</div>
+      <div class="mp-hint">Share your room code so friends can join the same card. Your account name will be used in the scoreboard.</div>
       <div style="font-size:.72rem; color:#aaa; margin-bottom:10px; font-style:italic;">
         By joining a room you agree to our <a href="#" onclick="showTerms(); return false;" style="color:#888; text-decoration:underline;">Terms of Use</a>. Be respectful — this is a game for friends.
       </div>
       <div class="mp-name-row">
-        <input class="mp-name-input" id="mpNameInput" placeholder="Your name" maxlength="20">
         <div class="mp-code-wrap">
           <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
           <button class="game-code-copy" onclick="copyGameCode()" title="Copy room code">📋</button>
@@ -2946,9 +2945,14 @@ async function mpJoin() {
   }
   if (!sb) { setMpStatus('Could not connect. Check your internet connection and try again.', 'error'); return; }
 
-  const name     = document.getElementById('mpNameInput').value.trim();
+  // Use authenticated user's name — not a manual input
+  const name = currentUser?.user_metadata?.full_name
+    || currentUser?.user_metadata?.name
+    || currentUser?.email?.split('@')[0]
+    || document.getElementById('mpNameInput').value.trim()
+    || 'Player';
   const gameCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
-  if (!name)     { setMpStatus('Please enter your name.', 'error'); return; }
+  if (!name)     { setMpStatus('Could not determine your name. Please sign out and back in.', 'error'); return; }
   if (!gameCode) { setMpStatus('A card code is required — tap New Card first.', 'error'); return; }
 
   setMpStatus('Connecting...', '');
@@ -3313,6 +3317,12 @@ async function onSignedIn(user) {
   }
 
   userTier = profile.tier || 'free';
+  // Set player name from auth account — prefer full name, fall back to email prefix
+  const authName = currentUser.user_metadata?.full_name
+    || currentUser.user_metadata?.name
+    || currentUser.email?.split('@')[0]
+    || 'Player';
+  try { localStorage.setItem('gsb_player_name', authName); } catch(e) {}
   initApp();
 }
 
