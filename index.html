@@ -499,295 +499,6 @@
   .bl-bot-g { background: var(--blue);    grid-column: 7; }
   .bl-bot-o { background: var(--purple);  grid-column: 9; }
 
-  /* ── CATEGORY SELECTION (SLIDERS) ── */
-  .catsel-section {
-    max-width: 900px; margin: 22px auto 0;
-    background: white; border: 3px solid var(--navy);
-    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy); overflow: hidden;
-  }
-  .catsel-header {
-    background: var(--navy); padding: 12px 18px; cursor: pointer;
-    display: flex; justify-content: space-between; align-items: center; user-select: none;
-  }
-  .catsel-header h2 { font-family:'Permanent Marker',cursive; color:var(--yellow); font-size:1.3rem; text-shadow:2px 2px 0 var(--red); }
-  .catsel-toggle { font-family:'Fredoka One',cursive; color:rgba(255,255,255,.7); font-size:.9rem; }
-  .catsel-body { padding: 14px 18px; }
-  .catsel-body.collapsed { display: none; }
-  .catsel-hint { font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px; line-height:1.5; }
-  .catsel-legend { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px; }
-  .catsel-legend span { font-family:'Fredoka One',cursive; font-size:.72rem; }
-  .catsel-legend .leg-hidden { color:#c0392b; }
-  .catsel-legend .leg-neutral { color:#888; }
-  .catsel-legend .leg-required { color:#1a7a3a; }
-  .catsel-counters { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
-  .catsel-counter { font-family:'Fredoka One',cursive; font-size:.88rem; background:var(--cream); border:2px solid var(--navy); border-radius:8px; padding:4px 12px; color:var(--navy); }
-  .catsel-counter span { color:var(--red); font-size:1.1rem; }
-  .catsel-error { display:none; margin-top:10px; background:#fff0f0; border:2px solid var(--red); border-radius:8px; padding:8px 12px; font-size:.82rem; font-weight:700; color:var(--red); }
-  .catsel-error.show { display:block; }
-  .catsel-row {
-    display: grid;
-    grid-template-columns: 1fr 160px 64px;
-    align-items: center;
-    gap: 10px;
-    padding: 5px 0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  .catsel-row:last-child { border-bottom: none; }
-  .catsel-cat-name { font-size:.82rem; font-weight:700; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .catsel-row.is-hidden .catsel-cat-name { color:#bbb; text-decoration:line-through; }
-  .catsel-row.is-required .catsel-cat-name { color:#1a7a3a; font-weight:800; }
-  .catsel-slider {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 6px; border-radius: 3px;
-    outline: none; cursor: pointer;
-  }
-  .catsel-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35);
-    cursor: pointer; transition: transform .1s;
-  }
-  .catsel-slider::-webkit-slider-thumb:active { transform: scale(1.25); }
-  .catsel-slider::-moz-range-thumb {
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer;
-  }
-  .catsel-val-label {
-    font-family: 'Fredoka One', cursive; font-size: .72rem;
-    text-align: center; white-space: nowrap;
-  }
-
-  /* ── GAME CODE ── */
-  .game-code-bar {
-    max-width: 900px; margin: 22px auto 0;
-    background: white; border: 3px solid var(--navy);
-    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy);
-    padding: 14px 18px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-    justify-content: center;
-  }
-  /* ── GAME CODE ── */
-  .game-code-bar {
-    max-width: 900px; margin: 22px auto 0;
-    background: white; border: 3px solid var(--navy);
-    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy);
-    padding: 16px 20px;
-  }
-  .game-code-title {
-    font-family: 'Permanent Marker', cursive;
-    font-size: 1.1rem; color: var(--navy); margin-bottom: 4px;
-  }
-  .game-code-hint {
-    font-size: .78rem; font-weight: 600; color: #888;
-    font-style: italic; margin-bottom: 12px;
-  }
-  .game-code-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .game-code-input {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.1rem; padding: 8px 14px;
-    border: 3px solid var(--navy); border-radius: 8px;
-    width: 150px; text-transform: uppercase; letter-spacing: 2px;
-    color: var(--navy); outline: none;
-    box-shadow: 3px 3px 0 var(--navy);
-    background: var(--cream);
-  }
-  .game-code-copy {
-    font-family: 'Fredoka One', cursive;
-    font-size: .9rem; padding: 8px 14px;
-    border: 2px solid var(--navy); border-radius: 8px;
-    cursor: pointer; background: var(--cream); color: var(--navy);
-    box-shadow: 2px 2px 0 var(--navy);
-    transition: transform .08s, box-shadow .08s;
-    white-space: nowrap;
-  }
-  .game-code-copy:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--navy); }
-  .game-code-copy:hover { background: #fff3cc; }
-  .game-code-divider {
-    border: none; border-top: 1px dashed #ddd; margin: 10px 0;
-  }
-  .game-code-join-label {
-    font-family: 'Fredoka One', cursive;
-    font-size: .88rem; color: #888; margin-bottom: 8px;
-  }
-  .game-code-join-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .game-code-join-input {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem; padding: 7px 12px;
-    border: 2px solid #bbb; border-radius: 8px;
-    width: 140px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--navy); outline: none;
-  }
-  .game-code-join-input:focus { border-color: var(--navy); }
-  .btn-join {
-    font-family: 'Permanent Marker', cursive;
-    font-size: .95rem; padding: 8px 18px;
-    background: var(--blue); color: white;
-    border: 3px solid var(--navy); border-radius: 10px;
-    cursor: pointer; box-shadow: 3px 3px 0 var(--navy);
-    transition: transform .08s, box-shadow .08s; white-space: nowrap;
-  }
-  .btn-join:hover { background: #0d6e8f; }
-  .btn-join:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
-  .game-code-joined {
-    display: none; margin-top: 8px;
-    font-family: 'Fredoka One', cursive; font-size: .85rem;
-    color: white; background: var(--dkgreen);
-    border-radius: 20px; padding: 4px 14px;
-    align-items: center; gap: 8px; width: fit-content;
-  }
-  .game-code-leave {
-    cursor: pointer; background: none; border: none;
-    color: white; font-family: 'Fredoka One', cursive;
-    font-size: .8rem; opacity: .8; padding: 0;
-  }
-  .game-code-leave:hover { opacity: 1; }
-
-  /* ── DARK MODE ── */
-  body.dark-mode {
-    --cream: #1a1a2e;
-    --navy:  #e8e8f0;
-    background: #1a1a2e;
-    background-image:
-      radial-gradient(circle at 15% 20%, rgba(255,209,102,.06) 0%, transparent 40%),
-      radial-gradient(circle at 85% 75%, rgba(6,214,160,.05) 0%, transparent 40%);
-    color: #e8e8f0;
-  }
-  body.dark-mode .venmo-box,
-  body.dark-mode .score-section,
-  body.dark-mode .rules-section,
-  body.dark-mode .options-section,
-  body.dark-mode .catsel-section,
-  body.dark-mode .mp-section,
-  body.dark-mode .game-code-bar { background: #16213e; border-color: #4a4a6a; box-shadow: 5px 5px 0 #4a4a6a; }
-  body.dark-mode .rules-header,
-  body.dark-mode .options-header,
-  body.dark-mode .catsel-header,
-  body.dark-mode .mp-header { background: #0f3460; }
-  body.dark-mode .bingo-cell { background: #16213e; color: #e8e8f0; border-color: #4a4a6a; }
-  body.dark-mode .bingo-cell:hover { background: #1a2a4a; }
-  body.dark-mode .bingo-cell.stamped { background: #2d1b1b; color: #ff6b6b; }
-  body.dark-mode .bingo-cell.winner  { background: #2d2d1b !important; color: #ffd166 !important; }
-  body.dark-mode .bingo-cell.free-space { background: #1e3a2e !important; color: #06d6a0 !important; }
-  body.dark-mode .card-outer { background: #0f3460; border-color: #4a4a6a; box-shadow: 6px 6px 0 #4a4a6a; }
-  body.dark-mode .score-title { color: #e8e8f0; }
-  body.dark-mode .score-num   { color: var(--yellow); }
-  body.dark-mode .catsel-cat-name { color: #c8c8e0; }
-  body.dark-mode .catsel-row.is-required .catsel-cat-name { color: #06d6a0; }
-  body.dark-mode .catsel-row.is-hidden   .catsel-cat-name { color: #555; }
-  body.dark-mode .mp-scoreboard-title,
-  body.dark-mode .mp-hint,
-  body.dark-mode .mp-status,
-  body.dark-mode .game-code-title { color: #c8c8e0; }
-  body.dark-mode .copyright,
-  body.dark-mode .copyright a { color: #555; }
-  body.dark-mode .option-row { border-color: #2a2a4a; }
-  body.dark-mode .option-row:hover { background: #1e2a3e; }
-  body.dark-mode .option-text { color: #c8c8e0; }
-  body.dark-mode .option-text span { color: #888; }
-  body.dark-mode .rules-body,
-  body.dark-mode .options-body,
-  body.dark-mode .catsel-body,
-  body.dark-mode .mp-body { background: #16213e; color: #c8c8e0; }
-  body.dark-mode .rules-body li,
-  body.dark-mode .scoring-block { color: #c8c8e0; }
-  body.dark-mode .mp-name-input,
-  body.dark-mode .game-code-input,
-  body.dark-mode .game-code-join-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
-  body.dark-mode .game-code-copy { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
-  body.dark-mode .mp-player-row { background: #0f3460; border-color: #2a2a4a; }
-  body.dark-mode .mp-player-row.me { background: #0a2a3e; border-color: var(--blue); }
-  body.dark-mode .mp-player-name { color: #e8e8f0; }
-  body.dark-mode .catsel-counter { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
-  body.dark-mode .mp-code-pill   { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
-  body.dark-mode .bottom-label { color: #e8e8f0; }
-  body.dark-mode .cat-label    { color: #e8e8f0; }
-  /* Match bottom label backgrounds to BINGO header dark colors */
-  body.dark-mode .bl-bot-b { background: #5a1a1f; }
-  body.dark-mode .bl-bot-i { background: #5a3a10; }
-  body.dark-mode .bl-bot-n { background: #1a4a30; }
-  body.dark-mode .bl-bot-g { background: #1a3050; }
-  body.dark-mode .bl-bot-o { background: #3a1a4a; }
-  /* Vertical cat-label per-column colors */
-  body.dark-mode .card-outer .cat-label:nth-child(5n+1) { background: #5a1a1f; color: #e8a0a5; }
-  body.dark-mode .card-outer .cat-label:nth-child(5n+2) { background: #5a3a10; color: #e8c090; }
-  body.dark-mode .card-outer .cat-label:nth-child(5n+3) { background: #1a4a30; color: #80d4a8; }
-  body.dark-mode .card-outer .cat-label:nth-child(5n+4) { background: #1a3050; color: #80b0d8; }
-  body.dark-mode .card-outer .cat-label:nth-child(5n+5) { background: #3a1a4a; color: #c090d8; }
-  body.dark-mode img { filter: none; }
-
-  /* Tone down headers and buttons in dark mode */
-  body.dark-mode .mp-header h2,
-  body.dark-mode .rules-header h2,
-  body.dark-mode .options-header h2,
-  body.dark-mode .catsel-header h2 {
-    color: #c8c8e0;
-    text-shadow: none;
-  }
-  body.dark-mode .generate-btn {
-    background: #0f3460;
-    color: #c8c8e0;
-    border-color: #4a4a6a;
-    box-shadow: 4px 4px 0 #4a4a6a;
-    text-shadow: none;
-  }
-  body.dark-mode .generate-btn:hover { background: #1a3a6a; }
-  body.dark-mode .win-text {
-    background: #2d2d1b;
-    color: #ffd166;
-    border-color: #4a4a6a;
-    box-shadow: 6px 6px 0 #4a4a6a;
-    text-shadow: none;
-  }
-  body.dark-mode .mp-join-btn,
-  body.dark-mode .btn-join {
-    box-shadow: 3px 3px 0 #4a4a6a;
-    border-color: #4a4a6a;
-  }
-  /* BINGO letter headers — muted in dark mode */
-  body.dark-mode .bl-b { background: #5a1a1f; color: #e8a0a5; }
-  body.dark-mode .bl-i { background: #5a3a10; color: #e8c090; }
-  body.dark-mode .bl-n { background: #1a4a30; color: #80d4a8; }
-  body.dark-mode .bl-g { background: #1a3050; color: #80b0d8; }
-  body.dark-mode .bl-o { background: #3a1a4a; color: #c090d8; }
-  /* Zigzag banners — tone down in dark mode */
-  body.dark-mode .banner-top    { background: #3a1a1f; opacity: .7; }
-  body.dark-mode .banner-bottom { background: #3a3010; opacity: .7; }
-  /* Modals */
-  body.dark-mode .modal-overlay { background: rgba(0,0,0,.75); }
-  body.dark-mode .modal-box {
-    background: #16213e;
-    border-color: #4a4a6a;
-    box-shadow: 6px 6px 0 #4a4a6a;
-  }
-  body.dark-mode .modal-box h3 { color: #e8e8f0; text-shadow: none; }
-  body.dark-mode .modal-box p  { color: #c8c8e0; }
-  body.dark-mode .modal-btn    { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
-  body.dark-mode .modal-btn-no { background: #0f3460; color: #c8c8e0; }
-  body.dark-mode .modal-btn-no:hover { background: #1a3a6a; }
-  /* Options revert button */
-  body.dark-mode .option-revert-btn {
-    background: #0f3460; color: #c8c8e0;
-    border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a;
-  }
-  body.dark-mode .option-revert-btn:hover { background: #1a3a6a; }
-  /* Score section */
-  body.dark-mode .score-section {
-    background: #16213e; border-color: #4a4a6a;
-  }
-  /* Catsel error */
-  body.dark-mode .catsel-error {
-    background: #2d1b1b; border-color: #8b3a3a; color: #ff9090;
-  }
-  /* Toggle sliders */
-  body.dark-mode .toggle-slider {
-    background: #4a4a6a;
-  }
-
   /* ── LARGE TEXT MODE ── */
   body.large-text .bingo-cell {
     font-size: clamp(0.88rem, 2.4vw, 1.1rem);
@@ -805,6 +516,28 @@
   body.large-text .bingo-cell.free-space {
     font-size: clamp(0.75rem, 1.5vw, 0.92rem) !important;
   }
+
+
+  /* ── PREMIUM UPSELL ── */
+  .premium-bar {
+    max-width: 900px; margin: 0 auto 0;
+    background: var(--navy); color: var(--yellow);
+    padding: 10px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .premium-bar-text {
+    font-family: 'Fredoka One', cursive; font-size: .88rem;
+    color: var(--yellow);
+  }
+  .premium-bar-btn {
+    font-family: 'Permanent Marker', cursive; font-size: .85rem;
+    padding: 6px 16px; background: var(--yellow); color: var(--navy);
+    border: 2px solid var(--yellow); border-radius: 8px; cursor: pointer;
+    text-decoration: none; white-space: nowrap;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.2);
+  }
+  .premium-bar-btn:hover { background: #ffe566; }
 
   .copyright {
     max-width: 900px; margin: 22px auto 0;
@@ -937,58 +670,15 @@
   }
   .bingo-toast.show { opacity: 1; }
 
-  /* ── CHAT ── */
-  .mp-chat { margin-top: 14px; }
-  .mp-chat-title {
-    font-family: 'Fredoka One', cursive; font-size: 1rem;
-    color: var(--navy); margin-bottom: 8px;
-  }
-  .mp-chat-messages {
-    height: 160px; overflow-y: auto;
-    background: var(--cream); border: 2px solid #e0e0e0;
-    border-radius: 10px; padding: 8px 10px;
-    display: flex; flex-direction: column; gap: 4px;
-    scroll-behavior: smooth;
-  }
-  .mp-chat-msg {
-    font-size: .82rem; line-height: 1.4;
-    word-break: break-word;
-  }
-  .mp-chat-msg .msg-name {
-    font-weight: 800; color: var(--navy); margin-right: 4px;
-  }
-  .mp-chat-msg.msg-me .msg-name { color: var(--blue); }
-  .mp-chat-msg.msg-system {
-    color: #888; font-style: italic; font-size: .75rem; text-align: center;
-  }
-  .mp-chat-input-row {
-    display: flex; gap: 8px; margin-top: 8px;
-  }
-  .mp-chat-input {
-    flex: 1; font-family: 'Nunito', sans-serif; font-weight: 600;
-    font-size: .9rem; padding: 8px 12px;
-    border: 2px solid var(--navy); border-radius: 8px; outline: none;
-  }
-  .mp-chat-input:focus { border-color: var(--blue); }
-  .mp-chat-send {
-    font-family: 'Permanent Marker', cursive; font-size: .9rem;
-    padding: 8px 16px; background: var(--blue); color: white;
-    border: 3px solid var(--navy); border-radius: 10px; cursor: pointer;
-    box-shadow: 3px 3px 0 var(--navy);
-    transition: transform .08s, box-shadow .08s;
-  }
-  .mp-chat-send:hover { background: #0d6e8f; }
-  .mp-chat-send:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
-  /* Dark mode chat */
-  body.dark-mode .mp-chat-messages { background: #0f3460; border-color: #4a4a6a; }
-  body.dark-mode .mp-chat-msg .msg-name { color: #c8c8e0; }
-  body.dark-mode .mp-chat-msg { color: #c8c8e0; }
-  body.dark-mode .mp-chat-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
-  body.dark-mode .mp-chat-send { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
-  body.dark-mode .mp-chat-title { color: #c8c8e0; }
+  /* chat removed in free version */
 </style>
 </head>
 <body>
+
+<div class="premium-bar">
+  <span class="premium-bar-text">Have an invite code?</span>
+  <a class="premium-bar-btn" href="premium.html">Sign in to Premium →</a>
+</div>
 
 <div class="banner-top"></div>
 <div class="banner-bottom"></div>
@@ -1059,18 +749,8 @@
       </div>
       <div class="mp-scoreboard-title">🏆 Live Scores</div>
       <div class="mp-players" id="mpPlayers"></div>
-
-      <!-- Chat -->
-      <div class="mp-chat">
-        <div class="mp-chat-title">💬 Chat</div>
-        <div class="mp-chat-messages" id="mpChatMessages"></div>
-        <div class="mp-chat-input-row">
-          <input class="mp-chat-input" id="mpChatInput" placeholder="Say something… 😄" maxlength="120"
-            onkeydown="if(event.key==='Enter') sendChatMessage()">
-          <button class="mp-chat-send" onclick="sendChatMessage()">Send</button>
-        </div>
-      </div>
     </div>
+  </div>
 
   </div>
 </div>
@@ -1113,15 +793,6 @@
     <span class="options-toggle" id="optionsToggle">▼ Show</span>
   </div>
   <div class="options-body collapsed" id="optionsBody">
-    <label class="option-row" for="optLargeText">
-      <span class="option-text">Large text
-        <span>Increases text size in the card squares and column labels</span>
-      </span>
-      <div class="toggle-switch">
-        <input type="checkbox" id="optLargeText" onchange="applyLargeText(); saveOptions()">
-        <span class="toggle-slider"></span>
-      </div>
-    </label>
     <label class="option-row" for="optSound">
       <span class="option-text">Sound effects
         <span>Play a sound when you mark a square or get a BINGO</span>
@@ -1146,15 +817,6 @@
       </span>
       <div class="toggle-switch">
         <input type="checkbox" id="optFreeSpace" onchange="applyFreeSpace(); saveOptions()">
-        <span class="toggle-slider"></span>
-      </div>
-    </label>
-    <label class="option-row" for="optDarkMode">
-      <span class="option-text">Dark mode
-        <span>Easier on the eyes at those early-morning sales</span>
-      </span>
-      <div class="toggle-switch">
-        <input type="checkbox" id="optDarkMode" onchange="applyDarkMode(); saveOptions()">
         <span class="toggle-slider"></span>
       </div>
     </label>
@@ -1216,30 +878,7 @@
   </div>
 </div>
 
-<div class="catsel-section">
-  <div class="catsel-header" onclick="toggleCatSel()">
-    <h2>📂 Category Selection</h2>
-    <span class="catsel-toggle" id="catselToggle">▼ Show</span>
-  </div>
-  <div class="catsel-body collapsed" id="catselBody">
-    <div class="catsel-hint">Slide each category toward 🟢 <strong>Required</strong> to guarantee it appears, toward 🔴 <strong>Hidden</strong> to exclude it, or leave in the middle to weight it more or less likely. Max 5 required; must keep at least 5 available.</div>
-    <div class="catsel-legend">
-      <span class="leg-hidden">🔴 Hidden</span>
-      <span class="leg-neutral">⚫ Normal</span>
-      <span class="leg-required">🟢 Required</span>
-    </div>
-    <div class="catsel-counters">
-      <div class="catsel-counter">Required: <span id="reqCount">0</span> / 5</div>
-      <div class="catsel-counter">Hidden: <span id="hidCount">0</span></div>
-      <div class="catsel-counter">Available: <span id="availCount">24</span></div>
-    </div>
-    <div class="catsel-error" id="catselError"></div>
-    <div id="catselRows"></div>
-    <div class="option-revert-wrap" style="margin-top:14px;">
-      <button class="option-revert-btn" onclick="resetCatSel()">↩ Reset Categories to Default</button>
-    </div>
-  </div>
-</div>
+
 
 <div class="banner-footer-top"></div>
 <div class="banner-footer-bottom"></div>
@@ -1266,33 +905,35 @@ let mpPlayerId     = null;
 
 /* ── DATA ── */
 const CATEGORIES = {
-  "Appliances":            ["George Foreman Grill","Popcorn Popper","Bread Machine","Mixer","Coffee Machine","Crock Pot","Toaster Oven","Waffle Iron","Foot Spa","Mini Fridge","Chest Freezer","Microwave (Countertop)","Magic Bullet","Rice Cooker","Sewing Machine","Juicer","Pancake Griddle","Pressure Cooker","Deep Fryer / Air Fryer","Electric Skillet","Rotisserie Oven","4-Slot Toaster","Quesadilla Maker","Hot Dog Roller","Egg Cooker","Fondue Pot (electric)","Cotton Candy Machine","Snow Cone Maker","Espresso Machine","Keurig or Pod Coffee Maker","Margarita Machine","SodaStream","Beer Brewing Kit","Milk Frother","Little Green Steam Machine","Electric Pet Nail Trimmer","Cake Pop Maker","Electric Donut Maker","Gas Range","Front Load Laundry Pedestals","Air Fryer Accessories","Presto PopLite or Whirley Pop","Portable AC Unit","Blackstone On the Go","2+ of the same appliance at one sale","As Seen on TV appliance","Appliance still in original box","Pampered Chef appliance"],
-  "BrickaBrack":            ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console","Hamilton or Franklin Mint collectible plate","Crystal paperweight","Vintage advertising tin","Ceramic or plastic fruit","Driftwood art","Macrame wall hanging","Colored glass bottles","Stained glass panel","Bobblehead (not Funko Pop)","Troll doll","Dashboard hula girl","Lava lamp","Frog statue (stone or metal)","Lucky cat (Maneki-neko)","Precious Moments figurine","Signed pottery","Vintage souvenir spoon","Souvenir thimble","Political button or bumper sticker","Vintage clock (not working)","Barometer","Kaleidoscope","Music box (working)","Bookend set"],
-  "Characters (Can be images)":            ["Rubeus Hagrid (Harry Potter)","Starscream (Transformers)","Brainy Smurf","Luigi (Super Mario Bros)","Patrick Star (Spongebob)","Spiderman","Dora the Explorer","Batman & Robin (both)","Thomas the Train","Tigger (Winnie the Poo)","Mickey Mouse","Cabbage Patch Kid","Tinkerbell","Bugs Bunny","Bart Simpson","Hello Kitty","Power Ranger (Blue)","the Lorax (Dr. Seuss)","Grover (Sesame Street)","Yogi Bear","Scooby Doo","Tweety Bird","Goofy","Cruella de Vil","Bambi","Cinderella","Chip or Dale (chipmunks)","He-Man","Optimus Prime","Care Bear (any)","My Little Pony (original)","Donkey Kong","Pac-Man","Sonic the Hedgehog","Pikachu","Link (Legend of Zelda)","Grimace (McDonald's)","The Noid (Domino's)","Charizard","Bulbasaur","Ren & Stimpy","Inspector Gadget","Animaniacs (Yakko, Wakko, or Dot)","The Tick"],
-  "Clothes":            ["High-Heeled Shoes (Red)","Fur Coat","Baseball Cap","<$1 Sunglasses","Woman's Hat","Socks","Bra","Leather Jacket","Adult PJs with Cartoon Character","Fanny Pack","Patagonia Jacket","Converse Sneakers","Tie with Words, Scene, or Character","Wig","Lady's Hat (not Winter)","Necklace (Blue)","Bogs (Rain Boots)","LuLaRoe","Osh Kosh B'Gosh","Sequined or bedazzled item","Bridesmaid or prom dress","Military uniform or jacket","Bowling shirt with a name on it","Matching tracksuit","Referee or umpire shirt","Chef's coat or apron","Denim jacket","Flannel shirt","Cowboy boots","Rain poncho","Winter vest (puffer)","Wool sweater","Overalls (adult)","Metallica or Rolling Stones t-shirt","Sports jersey (pro team)","Tie-dyed (non t-shirt)","Made in USA tag on any item","Vintage Land's End or LL Bean","Ralph Lauren Polo","Members Only jacket","Izod Lacoste (vintage crocodile)","Bolo tie","Belt with large buckle","Suspenders","Silk scarf","Trucker hat with local business","Visor","Leg warmers","Vacation t-shirt from before 2000","Monogrammed clothing","Ugly Christmas sweater","Uniform from a job (name tag still on)","Shirt with shoulder pads","Hypercolor shirt"],
-  "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle","Knitting needles and pattern","Cross stitch kit or finished piece","Fabric collection","Cricut machine or cartridge","Rubber stamp collection","Scrapbook (completed)","Pressed flower art","Candle collection","Decorative wreath","Floral arrangement (silk)","Decorative letters (wall)","Mason jar collection","Farmhouse sign","Chalk painted item","Burlap decoration","Woman's perfume","Hat box","Jewelry box","Brooch or lapel pin","Tea set (complete)","Cake decorating kit","Cookie jar","Vintage recipe box","Pie server set","Punch bowl set","Personalized cutting board","Item with Oprah Winfrey on it","Longaberger basket","Vera Bradley bag","Mary Kay or Avon item","PartyLite candle (in box)","Yankee Candle (orange)","Thirty-One bag or organizer","Tupperware (vintage harvest gold)","Scentsy warmer or wax","Pampered Chef stoneware","Tastefully Simple item","Princess House crystal or cookware","Home Interiors figurine or picture","Bath & Body Works gift set","Coach purse or wallet","Dooney & Bourke bag","Willow Tree figurine","Swarovski crystal piece"],
-  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet","Socket wrench set","Level (48 inch or larger)","Fishing net or gaff","Ammo box (empty)","Canadian Goose decoy","Jack stands","Creeper (mechanic's rolling board)","Jumper cables","Battery charger","Smoker (any size)","Cooler (50+ gallon)","ATV or dirt bike gear","Weight bench","Archery target","Billiard cue","Poker chip set (300+ chips)","Bar sign (neon or metal)","Wall mount bottle opener","5+ shot glasses at one sale","Sports bar stool","Foosball table","Air hockey table","Signed sports photo","Chainsaw","Shaving kit (straight razor)","Cigar box or humidor","Military memorabilia","Pocket watch collection","Dickies work pants","Hard hat","Blaze orange vest","Cowboy hat","Suspenders (wide)","Letterman jacket","Hawaiian shirt (loud pattern)"],
-  "Furniture":            ["Office Chair","Recliner","Arm Lamp","Home Made Furniture","Folding Chairs","File Cabinet","Free Furniture","Pool or Fooseball Table","Bar Stool","$250+ Furniture","Folding Table (for sale)","Dining Table w/ 5+ Chairs","Refinished Blue Furniture","Distressed Furniture","Book Shelf","Ottoman","Sofa or Loveseat","Floor Lamp","Endtable / Nightstand","Rocking chair","Papasan chair","Bean bag chair","Chaise lounge","Camping chair","Director's chair","Drafting table","Coffee table with storage","Nesting tables (set)","Picnic table","Armoire or wardrobe","Chest of drawers","Hope chest or cedar chest","Steamer trunk","Blanket ladder","Headboard only","Bunk bed frame","Murphy bed","Patio set","Wicker furniture","Park bench","Furniture with original price tag","China cabinet or Curio cabinet","Shoe rack","Furniture with moving tags still attached","Furniture with items still inside a drawer","Furniture with name written on the back","Furniture with a sold sign on it","Entire bedroom set for sale"],
-  "Games":            ["Trivial Pursuit","Rummikub","Apples 2 Apples","800+ Piece Puzzle","Cranium","Magic Cards or Pokemon","SORRY!","$20+ Board Game","LIFE","Board Game in Original Shrinkwrap","Poker Chips","Monopoly (not themed)","Monopoly (themed)","Risk (themed)","Rubiks Cube","DVD or VHS based game","Cards Against Humanity","Game dated before 1990","Digital version of Board Game","Card game w/ rubber band (no box)","Chess set w/ mismatched pieces","Dominoes w/ cigarette or alcohol backs","Battleship (Electronic version)","Scrabble (Deluxe or Rotating Board)","Candy Land (dated before 2010)","Chutes and Ladders","Operation (w/ working batteries)","Jenga (Giant size)","Guess Who","Trouble","Pandemic","Settlers of Catan","Ticket to Ride","Sequence","Balderdash","Chess or Checkers (magnetized)","Deluxe / Gold Edition board game","Cards Against Humanity set over $49","Collector's Tin board game","Foreign Language Edition board game","Game with a name written inside the lid","Murder mystery dinner game","Sports-specific trivia game","Religious or Bible-themed game","Drinking game (non-card)","Dice game in a tin or tube","Educational math card game","Pictionary","Taboo (with working buzzer)","Telestrations","Cribbage board (hand carved or wooden)"],
-  "Holiday (Can be images)":            ["Snowman","Jack-o-Lantern","Heart","Shamrock","Easter Egg","Turkey","American Flag","Martin Luther King","George Washington","Fireworks","Santa Claus (figurine)","Reindeer (stuffed)","Animatronic Halloween","Easter Basket","Driedel or Menorah","Greatest Dad Souvenir","Mother's Day Souvenir","Cornucopia","Christmas Ornament","Nativity scene (full)","Witch Hat","Valentine's Day stuffed animal","St. Patrick's Day beer mug","Uncle Sam","Mardi Gras mask","Maypole or May basket","Graduation cap","New Year's top hat","Pilgrim figurine","Cupid","Groundhog","Holiday cookie cutter set","Sugar Skull"],
-  "Home Improvement":            ["Shower head (new in box)","Faucet (new in box)","Pipe wrench","Teflon tape","Toilet flapper or fill valve","PVC pipe","Wire nuts","Electrical conduit","Junction box","Extension cord (heavy duty)","Voltage meter","Dimmer switch","GFCI outlet (new)","Electrical tape (not black)","Circuit breaker","Loose tile","Laminate flooring (partial box)","Paint tray and liners","Paint sprayer","Caulking gun","Framing square","Nail gun","Miter box (manual)","Bag of bolts or screws","Picture hanging hardware","Window screen repair kit","Tape measure (25ft+)","Laser level","Chalk snap line","Plumb bob","Safety glasses","Sawhorses (pair under $15)","Sandpaper","Door knob set (new in package)","Outdoor light fixture","Solar panel","Shingles (partial bundle)","Cabinet hinges (new pack)","Drawer slides (set)","Wood filler"],
-  "Items in Free Box":            ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap","Remote control (no batteries)","Instruction manual (no product)","Partially used candle","McDonald's toy","Used gift wrap or ribbon","Foam pool noodle","Trophy with someone else's name","Framed photo of strangers","Hotel toiletries (unopened)","Foreign coin","Partially used spice jar","Reusable grocery bag (worn)","Bread bag clips","Takeout menu collection","Paper plates (partial pack)","Non-spice food item","WD-40","Pine Sol","Cassette tape with no label","Empty spray bottle","Stained throw pillow","Novelty pen that doesn't write","Airport luggage tag","Swag from a defunct business","Armor-All","Duct Tape","Kids meal toy (not McDonald's)","Plastic bead necklace","Item with a feather on it"],
-  "Kitchen":            ["Martini Glass","Tupper Ware","Travel Mug","Chaffing Dish","Kitchen Sink","German Beer Stein","Wine Stopper","Kiss the Cook item","Cheese Grater","Cast Iron Skillet","Knife Block","Plastic Cereal Cannisters","Stainless Steel Trashcan","Salad Spinner","Pizza Stone","Strainer","Ice Cream Scoop","Pot Holder","Melon Baller or Potato Peeler","Rolling Pin","Ice Cube Tray","Odd Shape or Engraved Cutting Board","Metal Colander","Mixing Bowl Set","Measuring Cups","Wooden Spoon Set","Muffin Tin","Baking Sheet","Casserole Dish","Electric Can Opener","Bottle Opener","Corkscrew","Dish Rack","Apron","Kitchen Timer","Spice Rack","Paper Towel Holder","Oven Mitts","Bundt Pan","Springform Pan","Dutch Oven","Wok","Fondue Set","Butter Dish","Gravy Boat","Cake Stand","Bread Box","Mandoline Slicer","Mortar & Pestle","Oil & Vinegar Set","Pie Dish","Souffle Dish","Deviled Egg Tray","Punch Bowl Set","Cocktail Shaker","Jello Mold","Tea Kettle","Crepe Pan","Corn Cob Holders"],
-  "Media":            ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)","Choose Your Own Adventure book","Cookbook (celebrity chef)","Romance novel (Fabio cover)","Hardy Boys or Nancy Drew","Encyclopedia Britannica set","Readers Digest","Chiltons auto repair manual","8-track tape","Mixed tape (handwritten label)","Full TV series on DVD","Sealed vinyl (never opened)","Disney VHS (black diamond edition)","Betamax tape","LaserDisc","3D Blu-Ray","Movie poster (original)","National Geographic collection","Life magazine (vintage)","Sports Illustrated Swimsuit edition","Rolling Stone (vintage)","Marvel comic book","Archie comic book","Vintage catalog (Sears, JC Penney)","Vintage newspaper (major headline)","PC game in box","Bible with pictures","Pulp Fiction on DVD","Book with 600-800 pages","Reba or Dolly cassette","Farmers Almanac","Medical or law reference book","Biography of a US President","Art instruction book"],
-  "Misc.":            ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys","Doorbell (wired or wireless)","Door knocker","House numbers (metal)","Curtain rods","Window blinds","Throw rug","Welcome mat","Tension rod","Light switch plates","Drawer pulls or cabinet knobs","Bird bath","Wind chime","Sprinkler head or system","Garden hose","Wheelbarrow","Stepping stones","Outdoor thermometer","Rain gauge","Flag pole","Yard ornament (metal)","Geode or crystal","Arrowhead collection","Yearbook","Paint (partial can)","Door handle or knob set","Luggage tag","Dry erase board","Mail sorter","Umbrella stand","Shoe horn","Lint roller (jumbo)"],
-  "Musical Instrument":            ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine","Ukulele","Banjo","Xylophone or marimba","Castanets","Triangle","Taiko drum","Toy piano","MIDI controller","Guitar case (hardshell)","Instrument stand","Metronome","Tuning fork","Drum throne","Instrument cable collection","Microphone (handheld)","Guitar tablature book","Piano lesson book","Reel to reel recorder","Guitar strap (decorative)","Drum sticks","Vintage music poster"],
-  "Old Folks":            ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager","Shower chair or bench","Grabber or reacher tool","Hearing aid case","Wheelchair (manual)","Knee scooter","Compression socks","Velcro shoes","Men's cardigan sweater","Large floral brooch","Bifocal glasses (extra pair)","Large button telephone","TV tray set","Magnifying glass (large)","Letter opener","Sewing basket","Big Band vinyl","Norman Rockwell item","Precious Moments figurine","Jello mold","Church cookbook","Pressure cooker (non-electric)","Cat or frog figurine collection","Ceramic animal cookie jar","Scrapbook with old news clippings","Arm chair covers (antimacassar)","Clear plastic table cloth","Pill crusher or splitter","Coffee tin","Paint by numbers (completed)","Macrame wall hanging","Velvet painting","Wall mounted clock (ornate)","Crocheted afghan","Latch hook rug (completed)","Embroidered pillowcase set"],
-  "Old Tech":            ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine","Pager or beeper","Answering machine (standalone)","Walkie talkies","CB radio","Satellite phone","Nokia brick phone","Film camera (35mm)","Disposable camera (unused)","Slide projector","VHS camcorder","Boom box","iPod (original or mini)","Karaoke machine (old)","Original Game Boy Color","Sega Genesis or Super Nintendo","IBM ThinkPad (old)","Zip drive","Electric typewriter","Adding machine","Garmin or TomTom GPS","TI-83, TI-84, or TI-86 calculator"],
-  "Sale Specific":            ["Helium Balloon","10+ signs for the same sale","Pink Lemonade Stand","Grilled Food (at sale)","Rummage Sale","Sunday Signage","Two Signs on One Stick","Cardboard Sign","Sign Says Distance in Miles","Meme on Sign (Trump, Poop Emoji, etc.)","Multi-Family Garage Sale","Estate Sale","Brick Fascade","Vintage Car for Sale","Boat for Sale","Sale continues in house","Lemonade Stand (kid < 5 years old)","Sale on Driveway, Lawn, & Garage","Garage Sale sign in yard","Sign pointing the wrong way","Neon colored sign","Sign with a smiley face","Sign that says Everything Must Go","Sign that lists specific items","Sign with a QR code","Items displayed on a blanket","Clothes on a real clothing rack","Items priced with sticker dots","Sale under a canopy or tent","Books organized by genre","Sale at a church or school","Sale in an apartment complex","Gated community sale","Sale with live music","Sale with a food truck nearby","Seller in pajamas","Seller on their phone the whole time","Seller who won't negotiate","Sign says Accepts Venmo","Dog present (must ask price of dog)","Fill a bag pricing"],
-  "Scouting":            ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map","Pinewood Derby car or kit","2 person tent","Girl Scout uniform","Scout sash with badges","Heritage Girls or Camp Fire item","Bear canister","Headlamp","Tarp or emergency blanket","Water filter or purification tablets","Multi-tool","Hatchet or camp axe","Folding camp saw","Fire starter kit","Camp chair (small folding)","Dry bags or stuff sacks","Carabiner","Paracord (spool)","Orienteering compass","Wilderness survival guide","Plant identification guide","Bird identification guide","Camping cookbook","Scout neckerchief slide","Popcorn tin","Cookie box","Wood burning kit or project","Friendship bracelet","Nature collection (rocks, leaves, flowers)","Merit badge pamphlet"],
-  "Shoppers":            ["Manta","The Kraken","High School / College Classmate","Recidivist (Seen at other sale earlier today)","Barnacle Bob","Haggler in Luxury Car","Haggler on item <=$1","Family of 5+","Mixed Race Couple","Person over 6ft 2in","Sunvisor or Fanny Pack Wearer","Shopper eating (food not from this sale)","Has Change Purse or Money Changer","Shopper with Headphones","Non-English Speaker","Won't Leave the Car","Wearing Shorts & Hoodie","Grandparent & Grandkid","Your Neighbor (name known in advance)","Wearing full pajamas","Wearing a sports jersey","Visible tattoo sleeve","Wearing a suit","Couple in matching outfits","Pushing stroller without a baby","On phone the entire time","Brought their own bag","Brought a measuring tape","Asks 'is this your best price?' on every item","Pays entirely in coins","Couple where one is clearly reluctant","Group of 4+ women shopping together","Two strangers bonding over an item","Parent dragging a bored teenager","Elderly couple holding hands","On video call / FaceTime for approval","Still wearing their name tag from work","Someone who tips the seller","Drinking a beverage from home"],
-  "Sports":            ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock","Tennis racket","Easton hockey stick","Viper or Rawlings baseball bat","Croquet set","Bocce ball set","Horseshoes set","Wilson volleyball","Pink or Green yoga mat","Resistance bands","Pull up bar","Ab roller","Kettlebell","Exercise bike","Hanging punching bag","Kayak paddle","Hiking poles","BMX bike","Adult bike helmet","Roller blades","Multi-color bowling shoes","E-bike","Olympic souvenir","Signed sports item","Little League uniform","Golf bag (full set)","Snorkel set (mask + fins)","Dart board"],
-  "Toys":            ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz","Etch A Sketch","Spirograph","View-Master","Lite-Brite","Silly Putty (in egg)","Slinky","Yo-Yo (Green or Wooden)","Jacks set","Marbles collection","Ken doll","Stretch Armstrong","Playmobil set","Fisher Price Little People set","Matchbox car","Erector Set","Lincoln Logs","Radio control car","Slot car track","Pogo stick","Hula hoop","Jump rope","Hacky sack","Tamagotchi","Hungry Hungry Hippos","Tech Deck (fingerboard)","M.U.S.C.L.E. or Micromachines","Bop It"],
-  "Alaskana":            ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item","Kuspuk (Alaska Native dress)","Qiviut item (musk ox wool)","Ivory carving","Totem pole","Bear paw print item","Moose antler (shed)","Whale bone carving","Salmon item (image or figure)","Dall sheep horn","Snowmachine parts or gear","Dog mushing gear","Ice fishing auger","Bunny boots","Item with Alaska Airlines logo","Mt. Marathon item","Denali or Mt. McKinley item","Alaska license plate","Alaska map (vintage)","Aurora borealis photograph","Alaskan postcard","Alaska Railroad print","North to Alaska item"],
-  "Arizona Bay":  ["Phoenix Suns jersey","Arizona Cardinals hat or helmet","Leather Sun Devils item","Saguaro cactus item","Arizona license plate","Turquoise ring","Roadrunner feather","Rattlesnake skin material","Tarantula item","Grand Canyon t-shirt","Lake Powell or Hoover Dam souvenir","Route 66 bag or map","Fry's Food Store bag","Iced tea (any brand)","Oscillating fan","Rain umbrella (unused)","Pool float or noodle","Golf tee","Pickleball paddle","Spring Training souvenir","UV umbrella or sun hat","Cooling towel","SPF 100+ sunscreen","Bolo tie","Fireworks","Dreamcatcher","Carved Kokopelli item","Car sun shade","Solar powered anything","Temperature gauge (reads over 110°F)"],
-  "Washington (the good one)":  ["Nirvana, Pearl Jam, or Soundgarden CD","Microsoft logo gear","Salmon or Orca item","Mariners branded baseball","Non-clothing Seahawks item","Item depicting Space Needle","Flannel shirt","Pike Place souvenir","Starbucks cup or mug","Frasier or Sleepless in Seattle DVD","Electric guitar or amp","Made in Washington item","Seattle tote or hat","Rock climbing gear","Casino item ending in -mish","Coleman, REI, or Thermarest sleeping bag","Blown glass","Kayak or canoe","Wooden, plastic, or ceramic apple","Sub Pop Records item","Kenny G item","Amazon smile logo item","Seattle SuperSonics item","Mt. Rainier item or photo","Olympic Peninsula souvenir","Bigfoot or Sasquatch item","Spotted owl item","Rainier or Olympia Beer glass","Fremont Troll (chia or sticker)","Seahawks Super Bowl XLVIII item","WSU scarf or earmuffs","Mt. St. Helens trinket","Item from Leavenworth","Washington state license plate","Lavender scented candle","Crabbing gear","Cartoon banana slug item","Stuffed sea otter or puffin","Plant for sale","Danner or Merrell boots","Rain gauge or umbrella","Twin Peaks on DVD"],
-  "Rob's 50th":            ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD","Item with Vintage label on it","Retirement themed item"],
+  "Appliances": [],
+  "BrickaBrack": [],
+  "Characters (Can be images)": [],
+  "Clothes": [],
+  "For Her": [],
+  "For Him": [],
+  "Furniture": [],
+  "Games": [],
+  "Holiday (Can be images)": [],
+  "Home Improvement": [],
+  "Items in Free Box": [],
+  "Kitchen": [],
+  "Media": [],
+  "Misc.": [],
+  "Musical Instrument": [],
+  "Old Folks": [],
+  "Old Tech": [],
+  "Sale Specific": [],
+  "Scouting": [],
+  "Shoppers": [],
+  "Sports": [],
+  "Toys": [],
+  "Alaskana": [],
+  "Arizona Bay": [],
+  "Washington (the good one)": [],
+  "Rob's 50th": [],
 };
+// Items loaded from Supabase — 10 per category for free tier
+
 const ALL_CATS_BASE = [
   "Appliances",
   "BrickaBrack",
@@ -1664,6 +1305,72 @@ function playFanfare() {
   } catch(e) {}
 }
 
+
+
+/* ── FETCH CATEGORIES (FREE - 10 items max) ── */
+let FETCHED_CATEGORIES = null;
+let FETCHED_ALL_CATS   = null;
+
+async function fetchCategoriesFromDB() {
+  try {
+    const { data: cats, error: catErr } = await sb
+      .from('categories')
+      .select('id, name, sort_order, is_state, state_name')
+      .order('sort_order');
+    if (catErr) throw catErr;
+
+    let items = [];
+    let from = 0;
+    const pageSize = 500;
+    while (true) {
+      const { data: page, error: pageErr } = await sb
+        .from('category_items')
+        .select('category_id, item_text, sort_order')
+        .order('sort_order')
+        .range(from, from + pageSize - 1);
+      if (pageErr) throw pageErr;
+      if (!page || page.length === 0) break;
+      items = items.concat(page);
+      if (page.length < pageSize) break;
+      from += pageSize;
+    }
+
+    const categoriesObj = {};
+    const allCatsList   = [];
+
+    // Free tier: first 8 standard categories only, 10 items each
+    const freeCats = cats
+      .filter(c => !c.is_state && c.name !== "Rob's 50th")
+      .slice(0, 8);
+
+    freeCats.forEach(cat => {
+      const catItems = items
+        .filter(i => i.category_id === cat.id)
+        .slice(0, 10)
+        .map(i => i.item_text);
+      if (catItems.length > 0) {
+        categoriesObj[cat.name] = catItems;
+        allCatsList.push(cat.name);
+      }
+    });
+
+    FETCHED_CATEGORIES = categoriesObj;
+    FETCHED_ALL_CATS   = allCatsList;
+    console.log(`Free: loaded ${allCatsList.length} categories, 10 items each`);
+    return true;
+  } catch(e) {
+    console.log('Failed to fetch from DB, using local data:', e);
+    return false;
+  }
+}
+
+function getActiveCategories() {
+  return FETCHED_CATEGORIES || CATEGORIES;
+}
+function getActiveCatList() {
+  if (FETCHED_ALL_CATS) return FETCHED_ALL_CATS;
+  return ALL_CATS.filter(c => !['Alaskana','Arizona Bay','Washington (the good one)',"Rob's 50th"].includes(c));
+}
 
 /* ── SEEDED RNG (Mulberry32) ── */
 function mulberry32(seed) {
@@ -2049,7 +1756,6 @@ function resetCatSel() {
 function confirmResetCatSel() {
   closeResetCatModal();
   try { localStorage.removeItem(CAT_SEL_KEY); } catch(e) {}
-  buildCatSelRows();
 }
 function closeResetCatModal() {
   document.getElementById('resetCatModal').style.display = 'none';
@@ -2466,8 +2172,6 @@ function saveOptions() {
     localStorage.setItem('gsb_options', JSON.stringify({
       sound:      document.getElementById('optSound').checked,
       confirmAll: document.getElementById('optConfirmAll').checked,
-      darkMode:   document.getElementById('optDarkMode').checked,
-      largeText:  document.getElementById('optLargeText').checked,
       showScore:  document.getElementById('optShowScore').checked,
       freeSpace:  document.getElementById('optFreeSpace').checked,
       alaskana:   document.getElementById('optAlaskana') ? document.getElementById('optAlaskana').checked : false,
@@ -2488,8 +2192,6 @@ function getColMode() {
 function applyOptionsToUI(o) {
   document.getElementById('optSound').checked      = !!o.sound;
   document.getElementById('optConfirmAll').checked = !!o.confirmAll;
-  document.getElementById('optDarkMode').checked   = !!o.darkMode;
-  document.getElementById('optLargeText').checked  = !!o.largeText;
   document.getElementById('optShowScore').checked  = o.showScore !== undefined ? !!o.showScore : true;
   document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
   if (document.getElementById('optAlaskana'))   document.getElementById('optAlaskana').checked   = !!o.alaskana;
@@ -2502,8 +2204,6 @@ function applyOptionsToUI(o) {
   const colEl  = document.querySelector(`input[name="colMode"][value="${colVal}"]`);
   if (colEl) colEl.checked = true;
   else document.getElementById('optColVertical').checked = true;
-  applyDarkMode();
-  applyLargeText();
   applyShowScore();
   applyColMode();
 }
@@ -2530,14 +2230,6 @@ function confirmRevertDefaults() {
   applyShowScore();
   applyColMode();
   saveOptions();
-}
-function applyLargeText() {
-  const on = document.getElementById('optLargeText').checked;
-  document.body.classList.toggle('large-text', on);
-}
-function applyDarkMode() {
-  const on = document.getElementById('optDarkMode').checked;
-  document.body.classList.toggle('dark-mode', on);
 }
 function applyShowScore() {
   const on = document.getElementById('optShowScore').checked;
