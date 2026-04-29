@@ -1158,7 +1158,7 @@
   <div class="invite-box">
     <div class="invite-title">🔑 Enter Invite Code</div>
     <div class="invite-subtitle">You need an invite code to access Yardingo Premium.<br>Contact Rob to get yours!</div>
-    <input class="invite-input" id="inviteCodeInput" placeholder="YARDSALE-HAWK"
+    <input class="invite-input" id="inviteCodeInput" placeholder="ENTER-CODE-HERE"
       maxlength="20" onkeydown="if(event.key==='Enter') redeemInviteCode()">
     <button class="invite-btn" onclick="redeemInviteCode()">🎟️ Redeem Code</button>
     <div class="invite-status" id="inviteStatus"></div>
@@ -3230,10 +3230,15 @@ async function onSignedIn(user) {
   initApp();
 }
 
+let appInitialized = false;
+
 function initApp() {
   document.getElementById('inviteOverlay').classList.add('hidden');
-  document.getElementById('userBar').style.display = 'flex';
-  document.getElementById('userEmail').textContent = currentUser.email || currentUser.user_metadata?.email || '';
+  document.getElementById('authOverlay').classList.add('hidden');
+
+  const userBar = document.getElementById('userBar');
+  userBar.style.display = 'flex';
+  document.getElementById('userEmail').textContent = currentUser.email || currentUser.user_metadata?.full_name || currentUser.user_metadata?.email || '';
 
   const tierBadge = document.querySelector('.user-bar-tier');
   if (userTier === 'full') {
@@ -3242,6 +3247,10 @@ function initApp() {
   } else {
     tierBadge.textContent = '🎮 Member';
   }
+
+  // Only initialize the game once
+  if (appInitialized) return;
+  appInitialized = true;
 
   // Pre-fill player name if previously used
   try {
