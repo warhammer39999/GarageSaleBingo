@@ -1848,6 +1848,67 @@ function playFanfare() {
 }
 
 
+
+/* ── FETCH CATEGORIES FROM SUPABASE ── */
+let FETCHED_CATEGORIES = null; // populated on load
+let FETCHED_ALL_CATS   = null;
+
+async function fetchCategoriesFromDB(tier = 'full') {
+  try {
+    // Fetch categories
+    const { data: cats, error: catErr } = await sb
+      .from('categories')
+      .select('id, name, sort_order, is_state, state_name')
+      .order('sort_order');
+
+    if (catErr) throw catErr;
+
+    // Fetch items — for full tier get all, for free tier limit to 10 per category
+    const itemLimit = tier === 'full' ? 10000 : 10;
+    const { data: items, error: itemErr } = await sb
+      .from('category_items')
+      .select('category_id, item_text, sort_order')
+      .order('sort_order');
+
+    if (itemErr) throw itemErr;
+
+    // Build CATEGORIES-style object
+    const categoriesObj = {};
+    const allCatsList   = [];
+
+    cats.forEach(cat => {
+      const catItems = items
+        .filter(i => i.category_id === cat.id)
+        .slice(0, itemLimit)
+        .map(i => i.item_text);
+      if (catItems.length > 0) {
+        categoriesObj[cat.name] = catItems;
+        allCatsList.push(cat.name);
+      }
+    });
+
+    FETCHED_CATEGORIES = categoriesObj;
+    FETCHED_ALL_CATS   = allCatsList;
+
+    console.log(`Loaded ${allCatsList.length} categories, ${items.length} items from Supabase`);
+    return true;
+  } catch(e) {
+    console.log('Failed to fetch categories from DB, falling back to local data:', e);
+    FETCHED_CATEGORIES = null;
+    FETCHED_ALL_CATS   = null;
+    return false;
+  }
+}
+
+function getActiveCategories() {
+  return FETCHED_CATEGORIES || CATEGORIES;
+}
+
+function getActiveCatList() {
+  if (FETCHED_ALL_CATS) return FETCHED_ALL_CATS;
+  return ALL_CATS;
+}
+
 /* ── SEEDED RNG (Mulberry32) ── */
 function mulberry32(seed) {
   return function() {
@@ -2046,7 +2107,7 @@ function getSliderVal(safe) {
 
 function getCatPrefs() {
   const required = [], hidden = [];
-  ALL_CATS.forEach(cat => {
+  getActiveCatList().forEach(cat => {
     const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
     const val = getSliderVal(safe);
     if (val === 7) required.push(cat);
@@ -2057,7 +2118,7 @@ function getCatPrefs() {
 
 function getCatWeights() {
   const weights = {};
-  ALL_CATS.forEach(cat => {
+  getActiveCatList().forEach(cat => {
     const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
     const val = getSliderVal(safe);
     weights[cat] = SLIDER_WEIGHTS[val - 1];
@@ -2068,10 +2129,11 @@ function getCatWeights() {
 function buildNewCardData() {
   const { required, hidden } = getCatPrefs();
   const weights = getCatWeights();
+  const activeCats = getActiveCatList();
 
   // Build weighted pool (exclude hidden and required)
   const pool = [];
-  ALL_CATS.forEach(cat => {
+  activeCats.forEach(cat => {
     if (hidden.includes(cat) || required.includes(cat)) return;
     const w = weights[cat];
     if (w > 0) {
@@ -2093,7 +2155,8 @@ function buildNewCardData() {
     if (fillers.length >= needed) break;
   }
   const cats  = sfn([...required, ...fillers]);
-  const items = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
+  const activeCategories = getActiveCategories();
+  const items = cats.map(cat => sfn([...(activeCategories[cat] || CATEGORIES[cat])]).slice(0, 5));
   return { categories: cats, items };
 }
 
@@ -3232,7 +3295,7 @@ async function onSignedIn(user) {
 
 let appInitialized = false;
 
-function initApp() {
+async function initApp() {
   document.getElementById('inviteOverlay').classList.add('hidden');
   document.getElementById('authOverlay').classList.add('hidden');
 
@@ -3251,6 +3314,11 @@ function initApp() {
   // Only initialize the game once
   if (appInitialized) return;
   appInitialized = true;
+
+  // Fetch categories from Supabase
+  await fetchCategoriesFromDB(userTier);
+  // Rebuild catsel with fetched cats
+  buildCatSelRows();
 
   // Pre-fill player name if previously used
   try {
