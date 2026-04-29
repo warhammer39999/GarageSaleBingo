@@ -987,6 +987,62 @@
   body.dark-mode .mp-chat-send { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
   body.dark-mode .mp-chat-title { color: #c8c8e0; }
 
+
+  /* ── INVITE CODE SCREEN ── */
+  .invite-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--cream);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .invite-overlay.hidden { display: none; }
+  .invite-box {
+    background: white; border: 3px solid var(--navy);
+    border-radius: 16px; box-shadow: 6px 6px 0 var(--navy);
+    padding: 32px 28px; max-width: 400px; width: 100%;
+    text-align: center;
+  }
+  .invite-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.4rem; color: var(--navy);
+    text-shadow: 2px 2px 0 var(--red); margin-bottom: 6px;
+  }
+  .invite-subtitle {
+    font-family: 'Fredoka One', cursive;
+    font-size: .9rem; color: #888; margin-bottom: 24px; line-height: 1.5;
+  }
+  .invite-input {
+    width: 100%; padding: 12px 14px; margin-bottom: 12px;
+    border: 3px solid var(--navy); border-radius: 8px;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+    text-transform: uppercase; letter-spacing: 1px;
+    outline: none; box-sizing: border-box; color: var(--navy);
+    text-align: center;
+  }
+  .invite-input:focus { border-color: var(--blue); }
+  .invite-btn {
+    width: 100%; padding: 11px 20px;
+    background: var(--dkgreen); color: white;
+    border: 3px solid var(--navy); border-radius: 10px;
+    font-family: 'Permanent Marker', cursive; font-size: 1rem;
+    cursor: pointer; box-shadow: 3px 3px 0 var(--navy);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .invite-btn:hover { background: #047a56; }
+  .invite-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
+  .invite-status {
+    margin-top: 14px; font-size: .85rem;
+    font-family: 'Fredoka One', cursive; color: #888; min-height: 20px;
+  }
+  .invite-status.error   { color: var(--red); }
+  .invite-status.success { color: #1a7a3a; }
+  .invite-signout-link {
+    margin-top: 16px; font-size: .75rem;
+    font-family: 'Fredoka One', cursive; color: #aaa;
+    cursor: pointer; text-decoration: underline;
+  }
+
   /* ── AUTH OVERLAY ── */
   .auth-overlay {
     position: fixed; inset: 0; z-index: 10000;
@@ -1093,6 +1149,20 @@
       onkeydown="if(event.key==='Enter') signInWithMagicLink()">
     <button class="auth-btn-magic" onclick="signInWithMagicLink()">✉️ Send Magic Link</button>
     <div class="auth-status" id="authStatus"></div>
+  </div>
+</div>
+
+
+<!-- Invite Code Screen -->
+<div class="invite-overlay hidden" id="inviteOverlay">
+  <div class="invite-box">
+    <div class="invite-title">🔑 Enter Invite Code</div>
+    <div class="invite-subtitle">You need an invite code to access Yardingo Premium.<br>Contact Rob to get yours!</div>
+    <input class="invite-input" id="inviteCodeInput" placeholder="YARDSALE-HAWK"
+      maxlength="20" onkeydown="if(event.key==='Enter') redeemInviteCode()">
+    <button class="invite-btn" onclick="redeemInviteCode()">🎟️ Redeem Code</button>
+    <div class="invite-status" id="inviteStatus"></div>
+    <div class="invite-signout-link" onclick="signOut()">Sign out and use a different account</div>
   </div>
 </div>
 
@@ -3109,6 +3179,70 @@ function clearChat() {
   if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
 }
 
+
+/* ── INVITE CODE ── */
+async function checkInviteStatus(user) {
+  try {
+    const { data } = await sb.from('profiles').select('tier, approved').eq('id', user.id).single();
+    return data;
+  } catch(e) { return null; }
+}
+
+async function redeemInviteCode() {
+  const code = document.getElementById('inviteCodeInput').value.trim().toUpperCase();
+  if (!code) { setInviteStatus('Please enter your invite code.', 'error'); return; }
+
+  setInviteStatus('Checking code...', '');
+
+  try {
+    // Check if code exists and is unused
+    const { data: codeRow, error } = await sb
+      .from('invite_codes')
+      .select('*')
+      .eq('code', code)
+      .maybeSingle();
+
+    if (!codeRow) {
+      setInviteStatus('❌ Invalid invite code. Please check and try again.', 'error');
+      return;
+    }
+    if (codeRow.used_by) {
+      setInviteStatus('❌ This code has already been used.', 'error');
+      return;
+    }
+
+    // Mark code as used
+    await sb.from('invite_codes').update({
+      used_by: currentUser.id,
+      used_at: new Date().toISOString()
+    }).eq('code', code);
+
+    // Update profile tier
+    await sb.from('profiles').update({
+      tier: codeRow.tier,
+      approved: true
+    }).eq('id', currentUser.id);
+
+    setInviteStatus('✓ Code accepted! Welcome to Yardingo Premium!', 'success');
+
+    // Short delay then show the app
+    setTimeout(() => {
+      userTier = codeRow.tier;
+      document.getElementById('inviteOverlay').classList.add('hidden');
+      initApp();
+    }, 1500);
+
+  } catch(e) {
+    setInviteStatus('Error: ' + (e.message || 'Please try again.'), 'error');
+  }
+}
+
+function setInviteStatus(msg, type) {
+  const el = document.getElementById('inviteStatus');
+  el.textContent = msg;
+  el.className = 'invite-status' + (type ? ' ' + type : '');
+}
+
 /* ── AUTH ── */
 let currentUser = null;
 let userTier    = 'free';
@@ -3135,20 +3269,27 @@ async function initAuth() {
 async function onSignedIn(user) {
   currentUser = user;
 
-  // Fetch tier from profiles table
-  try {
-    const { data } = await sb.from('profiles').select('tier').eq('id', user.id).single();
-    userTier = data?.tier || 'free';
-  } catch(e) {
-    userTier = 'free';
+  // Hide auth overlay
+  document.getElementById('authOverlay').classList.add('hidden');
+
+  // Fetch profile
+  const profile = await checkInviteStatus(user);
+
+  if (!profile || !profile.approved) {
+    // Show invite code screen
+    document.getElementById('inviteOverlay').classList.remove('hidden');
+    return;
   }
 
-  // Hide auth overlay, show app
-  document.getElementById('authOverlay').classList.add('hidden');
-  document.getElementById('userBar').style.display = 'flex';
-  document.getElementById('userEmail').textContent = user.email || user.user_metadata?.email || '';
+  userTier = profile.tier || 'free';
+  initApp();
+}
 
-  // Update tier badge
+function initApp() {
+  document.getElementById('inviteOverlay').classList.add('hidden');
+  document.getElementById('userBar').style.display = 'flex';
+  document.getElementById('userEmail').textContent = currentUser.email || currentUser.user_metadata?.email || '';
+
   const tierBadge = document.querySelector('.user-bar-tier');
   if (userTier === 'full') {
     tierBadge.textContent = '⭐ Premium';
