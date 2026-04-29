@@ -1333,6 +1333,10 @@ function getActiveCatList() {
   return ALL_CATS.filter(c => !['Alaskana','Arizona Bay','Washington (the good one)',"Rob's 50th"].includes(c));
 }
 
+
+/* ── MP STUBS (free version — no multiplayer scoring) ── */
+function mpUpdateScore() {} // stub — no multiplayer in free version
+
 /* ── SEEDED RNG (Mulberry32) ── */
 function mulberry32(seed) {
   return function() {
@@ -1722,40 +1726,6 @@ function closeResetCatModal() {
 
 // Resume player modal
 let _resumePlayerData = null;
-function showResumePlayerModal(name, gameCode, existing) {
-  _resumePlayerData = { name, gameCode, existing };
-  document.getElementById('resumePlayerMsg').textContent =
-    `"${name}" is already in this game. Resume as this player?`;
-  document.getElementById('resumePlayerModal').style.display = 'flex';
-}
-async function confirmResumePlayer() {
-  closeResumePlayerModal();
-  if (!_resumePlayerData) return;
-  const { name, gameCode, existing } = _resumePlayerData;
-  _resumePlayerData = null;
-
-  mpPlayerId = existing.id;
-  mpPlayer   = { id: existing.id, name, game_code: gameCode };
-  try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
-  mpSubscribe(gameCode);
-  subscribeChatChannel(gameCode);
-  document.getElementById('mpJoinArea').style.display   = 'none';
-  document.getElementById('mpActiveArea').style.display = 'block';
-  document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
-  document.getElementById('mpActiveCode').textContent    = gameCode;
-  await mpLoadPlayers(gameCode);
-  await loadChatHistory(gameCode);
-  const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-  await mpUpdateScore(score, Math.floor(score));
-}
-function cancelResumePlayer() {
-  closeResumePlayerModal();
-  _resumePlayerData = null;
-  setMpStatus('Enter a different name to join.', 'error');
-}
-function closeResumePlayerModal() {
-  document.getElementById('resumePlayerModal').style.display = 'none';
-}
 
 function toggleCatSel() {
   const body   = document.getElementById('catselBody');
@@ -2377,14 +2347,6 @@ function initSupabase() {
     console.log('Supabase init failed:', e);
   }
 }
-
-
-
-async 
-
-let mpPollInterval     = null;
-let mpReconnectTimeout = null;
-
 
 
 
