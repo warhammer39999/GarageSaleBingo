@@ -1867,11 +1867,22 @@ async function fetchCategoriesFromDB(tier = 'full') {
 
     // Fetch items — for full tier get all, for free tier limit to 10 per category
     const itemLimit = tier === 'full' ? 10000 : 10;
-    const { data: items, error: itemErr } = await sb
-      .from('category_items')
-      .select('category_id, item_text, sort_order')
-      .order('sort_order')
-      .limit(5000);
+    // Fetch all items using pagination to bypass 1000 row default limit
+    let items = [];
+    let from = 0;
+    const pageSize = 500;
+    while (true) {
+      const { data: page, error: itemErr } = await sb
+        .from('category_items')
+        .select('category_id, item_text, sort_order')
+        .order('sort_order')
+        .range(from, from + pageSize - 1);
+      if (itemErr) throw itemErr;
+      if (!page || page.length === 0) break;
+      items = items.concat(page);
+      if (page.length < pageSize) break;
+      from += pageSize;
+    }
 
     if (itemErr) throw itemErr;
 
