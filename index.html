@@ -713,46 +713,7 @@
   <div class="score-title">📊 Current Score: <span class="score-num" id="scoreVal">0.00</span></div>
 </div>
 
-<div class="mp-section">
-  <div class="mp-header" onclick="toggleMP()">
-    <h2>👥 Play with Friends</h2>
-    <span class="mp-toggle" id="mpToggle">▼ Show</span>
-  </div>
-  <div class="mp-body collapsed" id="mpBody">
 
-    <!-- Join area (shown before connected) -->
-    <div id="mpJoinArea">
-      <div class="mp-hint">Enter your name and your room code to play with friends in real time. Share your room code so others can join.</div>
-      <div style="font-size:.72rem; color:#aaa; margin-bottom:10px; font-style:italic;">
-        By joining a room you agree to our <a href="#" onclick="showTerms(); return false;" style="color:#888; text-decoration:underline;">Terms of Use</a>. Be respectful — this is a game for friends.
-      </div>
-      <div class="mp-name-row">
-        <input class="mp-name-input" id="mpNameInput" placeholder="Your name" maxlength="20">
-        <div class="mp-code-wrap">
-          <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
-          <button class="game-code-copy" onclick="copyGameCode()" title="Copy room code">📋</button>
-        </div>
-        <button class="mp-join-btn" onclick="mpJoin()">Join Room</button>
-      </div>
-      <div class="mp-status" id="mpStatus">Playing solo — join a room to share live scores with friends.</div>
-    </div>
-
-    <!-- Active area (shown when connected) -->
-    <div id="mpActiveArea" style="display:none;">
-      <div class="mp-active-header">
-        <div id="mpActiveStatus" class="mp-status connected"></div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <span class="mp-code-pill">🎮 <strong id="mpActiveCode"></strong></span>
-          <button class="game-code-copy" onclick="copyGameCode()" title="Copy code">📋 Copy</button>
-          <button class="mp-leave-btn" onclick="mpLeave()">Leave</button>
-        </div>
-      </div>
-      <div class="mp-scoreboard-title">🏆 Live Scores</div>
-      <div class="mp-players" id="mpPlayers"></div>
-    </div>
-  </div>
-
-  </div>
 </div>
 
 <!-- Bingo toast notification -->
@@ -1523,8 +1484,7 @@ async function detectUserState() {
       if (region && region.length > 1 && !region.includes('<')) {
         detectedState = region.trim();
         console.log('Detected region:', detectedState);
-        if (document.getElementById('catselRows')) buildCatSelRows();
-        return;
+        if (document.getElementById('catselRows'))         return;
       }
     } catch(e) {
       // Try next API
@@ -1534,7 +1494,6 @@ async function detectUserState() {
   // All APIs failed
   console.log('Geolocation failed — all APIs unreachable. State set to Unknown.');
   detectedState = null;
-  if (document.getElementById('catselRows')) buildCatSelRows();
 }
 
 function getStateCategoryDefault(cat) {
@@ -2296,8 +2255,10 @@ try {
   }
 } catch(e) {}
 
+// Fetch categories first, then init app
+fetchCategoriesFromDB().then(() => {
+
 try {
-  // Render card first so DOM exists, then load options so applies work
   if (loadState()) {
     renderCard(false);
   } else {
@@ -2327,7 +2288,6 @@ try {
   applyShowScore();
   applyFreeSpace();
   applyColMode();
-  buildCatSelRows();
 
   // Make sure room code is always visible — restore or create once
   const roomCode = getOrCreateRoomCode();
@@ -2339,8 +2299,9 @@ try {
   console.error('Init error, resetting:', e);
   try { localStorage.clear(); } catch(le) {}
   generateCard();
-  buildCatSelRows();
 }
+
+}); // end fetchCategoriesFromDB.then()
 
 /* ── SERVICE WORKER (PWA) ── */
 if ('serviceWorker' in navigator) {
@@ -2417,180 +2378,22 @@ function initSupabase() {
   }
 }
 
-function toggleMP() {
-  const body   = document.getElementById('mpBody');
-  const toggle = document.getElementById('mpToggle');
-  const hidden = body.classList.toggle('collapsed');
-  toggle.textContent = hidden ? '▼ Show' : '▲ Hide';
-}
 
-async function mpJoin() {
-  if (!sb) {
-    try {
-      if (window.supabase && window.supabase.createClient) {
-        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
-    } catch(e) {}
-  }
-  if (!sb) { setMpStatus('Could not connect. Check your internet connection and try again.', 'error'); return; }
 
-  const name     = document.getElementById('mpNameInput').value.trim();
-  const gameCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
-  if (!name)     { setMpStatus('Please enter your name.', 'error'); return; }
-  if (!gameCode) { setMpStatus('A card code is required — tap New Card first.', 'error'); return; }
-
-  setMpStatus('Connecting...', '');
-
-  try {
-    // Check for existing player with same name in this game
-    const existingRes = await sb
-      .from('game_players')
-      .select('*')
-      .eq('game_code', gameCode)
-      .eq('player_name', name)
-      .maybeSingle();
-    const existing = existingRes.data;
-
-    if (existing) {
-      showResumePlayerModal(name, gameCode, existing);
-      return;
-    }
-
-    // No duplicate — upsert session and insert new player
-    try { await sb.from('game_sessions').upsert({ code: gameCode }, { onConflict: 'code' }); } catch(e) {}
-
-    const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-    const res = await sb.from('game_players').insert({
-      game_code:   gameCode,
-      player_name: name,
-      score:       score,
-      bingos:      0
-    }).select().single();
-
-    if (res.error) throw new Error(res.error.message || 'Could not join game');
-    const data = res.data;
-
-    mpPlayerId = data.id;
-    mpPlayer   = { id: data.id, name, game_code: gameCode };
-    try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
-
-    mpSubscribe(gameCode);
-    subscribeChatChannel(gameCode);
-
-    document.getElementById('mpJoinArea').style.display   = 'none';
-    document.getElementById('mpActiveArea').style.display = 'block';
-    document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
-    document.getElementById('mpActiveCode').textContent    = gameCode;
-
-    await mpLoadPlayers(gameCode);
-    await loadChatHistory(gameCode);
-    appendSystemMessage(`${name} joined the game`);
-
-  } catch(e) {
-    const msg = (e && e.message) ? e.message : String(e);
-    setMpStatus('Connection failed: ' + msg, 'error');
-  }
-}
+async 
 
 let mpPollInterval     = null;
 let mpReconnectTimeout = null;
 
-function mpSubscribe(gameCode) {
-  if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
-  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
-  if (mpReconnectTimeout) { clearTimeout(mpReconnectTimeout); mpReconnectTimeout = null; }
 
-  mpChannel = sb.channel(`game-${gameCode}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_players' },
-      payload => {
-        if (payload.new && payload.new.game_code === gameCode) mpLoadPlayers(gameCode);
-      })
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_players' },
-      payload => {
-        if (payload.new && payload.new.game_code === gameCode) {
-          mpLoadPlayers(gameCode);
-          if (payload.new.bingos > (payload.old.bingos || 0) && payload.new.id !== mpPlayerId)
-            showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
-        }
-      })
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'game_players' },
-      () => mpLoadPlayers(gameCode))
-    .subscribe(status => {
-      console.log('Realtime status:', status);
-      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        // Auto-reconnect after 3 seconds
-        if (mpPlayerId) {
-          mpReconnectTimeout = setTimeout(() => {
-            console.log('Reconnecting...');
-            mpSubscribe(gameCode);
-          }, 3000);
-        }
-      }
-    });
 
-  // Polling fallback every 5s
-  mpPollInterval = setInterval(() => {
-    if (mpPlayerId) mpLoadPlayers(gameCode);
-  }, 5000);
-}
 
-async function mpLoadPlayers(gameCode) {
-  if (!sb) return;
-  const { data, error } = await sb
-    .from('game_players')
-    .select('*')
-    .eq('game_code', gameCode)
-    .order('score', { ascending: false });
 
-  if (error || !data) return;
-  renderMpPlayers(data);
-}
 
-function renderMpPlayers(players) {
-  const container = document.getElementById('mpPlayers');
-  if (!container) return;
 
-  container.innerHTML = players.map((p, i) => {
-    const isMe    = p.id === mpPlayerId;
-    const medal   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
-    const bingos  = p.bingos > 0 ? ` · ${p.bingos} BINGO${p.bingos>1?'s':''}` : '';
-    return `<div class="mp-player-row${isMe?' me':''}">
-      <span style="font-size:.9rem">${medal}</span>
-      <span class="mp-player-name">${p.player_name}${isMe ? ' <span class="mp-player-you">(you)</span>' : ''}</span>
-      <span class="mp-player-bingos">${bingos}</span>
-      <span class="mp-player-score">${parseFloat(p.score).toFixed(3)}</span>
-    </div>`;
-  }).join('');
-}
 
-async function mpUpdateScore(score, bingoCount) {
-  if (!sb || !mpPlayerId) return;
-  if (score === undefined) {
-    score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
-    bingoCount = Math.floor(score);
-  }
-  await sb.from('game_players').update({
-    score:      score,
-    bingos:     bingoCount || 0,
-    updated_at: new Date().toISOString()
-  }).eq('id', mpPlayerId);
-}
 
-async function mpLeave() {
-  if (sb && mpPlayerId) {
-    await sb.from('game_players').delete().eq('id', mpPlayerId);
-  }
-  if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
-  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
-  if (mpReconnectTimeout) { clearTimeout(mpReconnectTimeout); mpReconnectTimeout = null; }
-  clearChat();
-  mpPlayerId = null;
-  mpPlayer   = null;
-  document.getElementById('mpJoinArea').style.display   = 'block';
-  document.getElementById('mpActiveArea').style.display = 'none';
-  document.getElementById('mpPlayers').innerHTML = '';
-  setMpStatus('Playing solo — join to share live scores with friends.', '');
-}
+
 
 function setMpStatus(msg, type) {
   const el = document.getElementById('mpStatus');
@@ -2610,68 +2413,15 @@ function showBingoToast(msg) {
 /* ── CHAT ── */
 let chatChannel = null;
 
-async function sendChatMessage() {
-  if (!sb || !mpPlayerId || !mpPlayer) return;
-  const input = document.getElementById('mpChatInput');
-  const raw   = input.value.trim();
-  if (!raw) return;
-  input.value = '';
 
-  // Censor profanity before sending
-  const msg = censorMessage(raw);
 
-  await sb.from('game_messages').insert({
-    game_code:   mpPlayer.game_code,
-    player_name: mpPlayer.name,
-    message:     msg
-  });
-}
 
-function subscribeChatChannel(gameCode) {
-  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
 
-  chatChannel = sb.channel(`chat-${gameCode}`)
-    .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'game_messages'
-    }, payload => {
-      if (payload.new && payload.new.game_code === gameCode) {
-        appendChatMessage(payload.new);
-      }
-    })
-    .subscribe();
-}
 
-async function loadChatHistory(gameCode) {
-  if (!sb) return;
-  const { data } = await sb
-    .from('game_messages')
-    .select('*')
-    .eq('game_code', gameCode)
-    .order('created_at', { ascending: true })
-    .limit(50);
-  if (data) data.forEach(appendChatMessage);
-}
 
-function appendChatMessage(row) {
-  const container = document.getElementById('mpChatMessages');
-  if (!container) return;
-  const isMe = row.player_name === (mpPlayer && mpPlayer.name);
-  const div  = document.createElement('div');
-  div.className = `mp-chat-msg${isMe ? ' msg-me' : ''}`;
-  div.innerHTML = `<span class="msg-name">${row.player_name}:</span>${escapeHtml(row.message)}`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
 
-function appendSystemMessage(msg) {
-  const container = document.getElementById('mpChatMessages');
-  if (!container) return;
-  const div = document.createElement('div');
-  div.className = 'mp-chat-msg msg-system';
-  div.textContent = msg;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
+
+
 
 function escapeHtml(str) {
   return str
@@ -2681,11 +2431,7 @@ function escapeHtml(str) {
     .replace(/"/g,'&quot;');
 }
 
-function clearChat() {
-  const container = document.getElementById('mpChatMessages');
-  if (container) container.innerHTML = '';
-  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
-}
+
 </script>
 </body>
 </html>
