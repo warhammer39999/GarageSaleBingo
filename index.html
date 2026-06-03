@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Yardingo">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --red:    #e63946;
@@ -46,6 +47,29 @@
     background: var(--yellow); height: 16px; margin-bottom: 20px;
     clip-path: polygon(0 100%,2.5% 0,5% 100%,7.5% 0,10% 100%,12.5% 0,15% 100%,17.5% 0,20% 100%,22.5% 0,25% 100%,27.5% 0,30% 100%,32.5% 0,35% 100%,37.5% 0,40% 100%,42.5% 0,45% 100%,47.5% 0,50% 100%,52.5% 0,55% 100%,57.5% 0,60% 100%,62.5% 0,65% 100%,67.5% 0,70% 100%,72.5% 0,75% 100%,77.5% 0,80% 100%,82.5% 0,85% 100%,87.5% 0,90% 100%,92.5% 0,95% 100%,97.5% 0,100% 100%,100% 100%,0 100%);
   }
+  /* Footer banners — mirror of top, reversed order */
+  .banner-footer-top {
+    background: var(--red); height: 16px; margin-top: 40px; margin-bottom: 0;
+    clip-path: polygon(0 0,2.5% 100%,5% 0,7.5% 100%,10% 0,12.5% 100%,15% 0,17.5% 100%,20% 0,22.5% 100%,25% 0,27.5% 100%,30% 0,32.5% 100%,35% 0,37.5% 100%,40% 0,42.5% 100%,45% 0,47.5% 100%,50% 0,52.5% 100%,55% 0,57.5% 100%,60% 0,62.5% 100%,65% 0,67.5% 100%,70% 0,72.5% 100%,75% 0,77.5% 100%,80% 0,82.5% 100%,85% 0,87.5% 100%,90% 0,92.5% 100%,95% 0,97.5% 100%,100% 0,100% 0,0 0);
+  }
+  .banner-footer-bottom {
+    background: var(--yellow); height: 16px; margin-top: 4px; margin-bottom: 0;
+    clip-path: polygon(0 100%,2.5% 0,5% 100%,7.5% 0,10% 100%,12.5% 0,15% 100%,17.5% 0,20% 100%,22.5% 0,25% 100%,27.5% 0,30% 100%,32.5% 0,35% 100%,37.5% 0,40% 100%,42.5% 0,45% 100%,47.5% 0,50% 100%,52.5% 0,55% 100%,57.5% 0,60% 100%,62.5% 0,65% 100%,67.5% 0,70% 100%,72.5% 0,75% 100%,77.5% 0,80% 100%,82.5% 0,85% 100%,87.5% 0,90% 100%,92.5% 0,95% 100%,97.5% 0,100% 100%,100% 100%,0 100%);
+  }
+  body.dark-mode .banner-footer-top    { background: #3a1a1f; opacity: .7; }
+  body.dark-mode .banner-footer-bottom { background: #3a3010; opacity: .7; }
+  /* Copyright links */
+  .copyright a {
+    color: #c0392b;
+    text-decoration: none;
+    font-style: italic;
+    font-size: .78rem;
+    border-bottom: 1px dotted #c0392b;
+    transition: color .15s, border-color .15s;
+  }
+  .copyright a:hover { color: var(--navy); border-bottom-color: var(--navy); }
+  body.dark-mode .copyright a { color: #e8a0a5; border-bottom-color: #e8a0a5; }
+  body.dark-mode .copyright a:hover { color: #e8e8f0; border-bottom-color: #e8e8f0; }
 
   /* ── TOP BAR ── */
   .top-bar {
@@ -285,6 +309,21 @@
     border-radius: 14px;
     border: 4px solid var(--navy);
     box-shadow: 6px 6px 0 var(--navy);
+    animation: popIn .4s cubic-bezier(.175,.885,.32,1.275), winglow 1.2s ease-in-out infinite;
+    cursor: pointer;
+    user-select: none;
+  }
+  .win-text:active { transform: translate(3px,3px); box-shadow: 3px 3px 0 var(--navy); }
+  @keyframes winglow {
+    0%,100% { box-shadow: 6px 6px 0 var(--navy); }
+    50%      { box-shadow: 6px 6px 0 var(--navy), 0 0 18px 6px rgba(230,57,70,.5); }
+  }
+  /* Confetti canvas */
+  #confettiCanvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    width: 100%; height: 100%;
   }
 
   /* ── SCORE ── */
@@ -460,7 +499,7 @@
   .bl-bot-g { background: var(--blue);    grid-column: 7; }
   .bl-bot-o { background: var(--purple);  grid-column: 9; }
 
-  /* ── CATEGORY SELECTION ── */
+  /* ── CATEGORY SELECTION (SLIDERS) ── */
   .catsel-section {
     max-width: 900px; margin: 22px auto 0;
     background: white; border: 3px solid var(--navy);
@@ -474,50 +513,49 @@
   .catsel-toggle { font-family:'Fredoka One',cursive; color:rgba(255,255,255,.7); font-size:.9rem; }
   .catsel-body { padding: 14px 18px; }
   .catsel-body.collapsed { display: none; }
-  .catsel-hint {
-    font-size: .78rem; font-weight: 600; color: #888; font-style: italic;
-    margin-bottom: 12px; line-height: 1.5;
+  .catsel-hint { font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px; line-height:1.5; }
+  .catsel-legend { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px; }
+  .catsel-legend span { font-family:'Fredoka One',cursive; font-size:.72rem; }
+  .catsel-legend .leg-hidden { color:#c0392b; }
+  .catsel-legend .leg-neutral { color:#888; }
+  .catsel-legend .leg-required { color:#1a7a3a; }
+  .catsel-counters { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .catsel-counter { font-family:'Fredoka One',cursive; font-size:.88rem; background:var(--cream); border:2px solid var(--navy); border-radius:8px; padding:4px 12px; color:var(--navy); }
+  .catsel-counter span { color:var(--red); font-size:1.1rem; }
+  .catsel-error { display:none; margin-top:10px; background:#fff0f0; border:2px solid var(--red); border-radius:8px; padding:8px 12px; font-size:.82rem; font-weight:700; color:var(--red); }
+  .catsel-error.show { display:block; }
+  .catsel-row {
+    display: grid;
+    grid-template-columns: 1fr 160px 64px;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
   }
-  .catsel-counters {
-    display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px;
+  .catsel-row:last-child { border-bottom: none; }
+  .catsel-cat-name { font-size:.82rem; font-weight:700; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .catsel-row.is-hidden .catsel-cat-name { color:#bbb; text-decoration:line-through; }
+  .catsel-row.is-required .catsel-cat-name { color:#1a7a3a; font-weight:800; }
+  .catsel-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 3px;
+    outline: none; cursor: pointer;
   }
-  .catsel-counter {
-    font-family: 'Fredoka One', cursive; font-size: .88rem;
-    background: var(--cream); border: 2px solid var(--navy);
-    border-radius: 8px; padding: 4px 12px; color: var(--navy);
+  .catsel-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    cursor: pointer; transition: transform .1s;
   }
-  .catsel-counter span { color: var(--red); font-size: 1.1rem; }
-  .catsel-table {
-    width: 100%; border-collapse: collapse;
+  .catsel-slider::-webkit-slider-thumb:active { transform: scale(1.25); }
+  .catsel-slider::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer;
   }
-  .catsel-table th {
-    font-family: 'Fredoka One', cursive; font-size: .8rem;
-    color: var(--navy); text-align: left; padding: 4px 8px 8px;
-    border-bottom: 2px solid var(--navy);
+  .catsel-val-label {
+    font-family: 'Fredoka One', cursive; font-size: .72rem;
+    text-align: center; white-space: nowrap;
   }
-  .catsel-table th:nth-child(2), .catsel-table th:nth-child(3) { text-align: center; }
-  .catsel-table td {
-    padding: 5px 8px; font-size: .82rem; font-weight: 600;
-    color: var(--navy); border-bottom: 1px solid #eee; vertical-align: middle;
-  }
-  .catsel-table tr:last-child td { border-bottom: none; }
-  .catsel-table td:nth-child(2), .catsel-table td:nth-child(3) { text-align: center; }
-  .catsel-table tr.cat-hidden-row td { color: #aaa; }
-  .catsel-table tr.cat-required-row td:first-child { color: var(--red); font-weight: 800; }
-  /* Custom checkbox styling */
-  .cat-check {
-    width: 18px; height: 18px; accent-color: var(--navy);
-    cursor: pointer;
-  }
-  .cat-check-req  { accent-color: var(--red); }
-  .cat-check-hide { accent-color: #888; }
-  .catsel-error {
-    display: none; margin-top: 10px;
-    background: #fff0f0; border: 2px solid var(--red);
-    border-radius: 8px; padding: 8px 12px;
-    font-size: .82rem; font-weight: 700; color: var(--red);
-  }
-  .catsel-error.show { display: block; }
 
   /* ── GAME CODE ── */
   .game-code-bar {
@@ -609,6 +647,147 @@
   }
   .game-code-leave:hover { opacity: 1; }
 
+  /* ── DARK MODE ── */
+  body.dark-mode {
+    --cream: #1a1a2e;
+    --navy:  #e8e8f0;
+    background: #1a1a2e;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,209,102,.06) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(6,214,160,.05) 0%, transparent 40%);
+    color: #e8e8f0;
+  }
+  body.dark-mode .venmo-box,
+  body.dark-mode .score-section,
+  body.dark-mode .rules-section,
+  body.dark-mode .options-section,
+  body.dark-mode .catsel-section,
+  body.dark-mode .mp-section,
+  body.dark-mode .game-code-bar { background: #16213e; border-color: #4a4a6a; box-shadow: 5px 5px 0 #4a4a6a; }
+  body.dark-mode .rules-header,
+  body.dark-mode .options-header,
+  body.dark-mode .catsel-header,
+  body.dark-mode .mp-header { background: #0f3460; }
+  body.dark-mode .bingo-cell { background: #16213e; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .bingo-cell:hover { background: #1a2a4a; }
+  body.dark-mode .bingo-cell.stamped { background: #2d1b1b; color: #ff6b6b; }
+  body.dark-mode .bingo-cell.winner  { background: #2d2d1b !important; color: #ffd166 !important; }
+  body.dark-mode .bingo-cell.free-space { background: #1e3a2e !important; color: #06d6a0 !important; }
+  body.dark-mode .card-outer { background: #0f3460; border-color: #4a4a6a; box-shadow: 6px 6px 0 #4a4a6a; }
+  body.dark-mode .score-title { color: #e8e8f0; }
+  body.dark-mode .score-num   { color: var(--yellow); }
+  body.dark-mode .catsel-cat-name { color: #c8c8e0; }
+  body.dark-mode .catsel-row.is-required .catsel-cat-name { color: #06d6a0; }
+  body.dark-mode .catsel-row.is-hidden   .catsel-cat-name { color: #555; }
+  body.dark-mode .mp-scoreboard-title,
+  body.dark-mode .mp-hint,
+  body.dark-mode .mp-status,
+  body.dark-mode .game-code-title { color: #c8c8e0; }
+  body.dark-mode .copyright,
+  body.dark-mode .copyright a { color: #555; }
+  body.dark-mode .option-row { border-color: #2a2a4a; }
+  body.dark-mode .option-row:hover { background: #1e2a3e; }
+  body.dark-mode .option-text { color: #c8c8e0; }
+  body.dark-mode .option-text span { color: #888; }
+  body.dark-mode .rules-body,
+  body.dark-mode .options-body,
+  body.dark-mode .catsel-body,
+  body.dark-mode .mp-body { background: #16213e; color: #c8c8e0; }
+  body.dark-mode .rules-body li,
+  body.dark-mode .scoring-block { color: #c8c8e0; }
+  body.dark-mode .mp-name-input,
+  body.dark-mode .game-code-input,
+  body.dark-mode .game-code-join-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .game-code-copy { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .mp-player-row { background: #0f3460; border-color: #2a2a4a; }
+  body.dark-mode .mp-player-row.me { background: #0a2a3e; border-color: var(--blue); }
+  body.dark-mode .mp-player-name { color: #e8e8f0; }
+  body.dark-mode .catsel-counter { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
+  body.dark-mode .mp-code-pill   { background: #0f3460; border-color: #4a4a6a; color: #c8c8e0; }
+  body.dark-mode .bottom-label { color: #e8e8f0; }
+  body.dark-mode .cat-label    { color: #e8e8f0; }
+  /* Match bottom label backgrounds to BINGO header dark colors */
+  body.dark-mode .bl-bot-b { background: #5a1a1f; }
+  body.dark-mode .bl-bot-i { background: #5a3a10; }
+  body.dark-mode .bl-bot-n { background: #1a4a30; }
+  body.dark-mode .bl-bot-g { background: #1a3050; }
+  body.dark-mode .bl-bot-o { background: #3a1a4a; }
+  /* Vertical cat-label per-column colors */
+  body.dark-mode .card-outer .cat-label:nth-child(5n+1) { background: #5a1a1f; color: #e8a0a5; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+2) { background: #5a3a10; color: #e8c090; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+3) { background: #1a4a30; color: #80d4a8; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+4) { background: #1a3050; color: #80b0d8; }
+  body.dark-mode .card-outer .cat-label:nth-child(5n+5) { background: #3a1a4a; color: #c090d8; }
+  body.dark-mode img { filter: none; }
+
+  /* Tone down headers and buttons in dark mode */
+  body.dark-mode .mp-header h2,
+  body.dark-mode .rules-header h2,
+  body.dark-mode .options-header h2,
+  body.dark-mode .catsel-header h2 {
+    color: #c8c8e0;
+    text-shadow: none;
+  }
+  body.dark-mode .generate-btn {
+    background: #0f3460;
+    color: #c8c8e0;
+    border-color: #4a4a6a;
+    box-shadow: 4px 4px 0 #4a4a6a;
+    text-shadow: none;
+  }
+  body.dark-mode .generate-btn:hover { background: #1a3a6a; }
+  body.dark-mode .win-text {
+    background: #2d2d1b;
+    color: #ffd166;
+    border-color: #4a4a6a;
+    box-shadow: 6px 6px 0 #4a4a6a;
+    text-shadow: none;
+  }
+  body.dark-mode .mp-join-btn,
+  body.dark-mode .btn-join {
+    box-shadow: 3px 3px 0 #4a4a6a;
+    border-color: #4a4a6a;
+  }
+  /* BINGO letter headers — muted in dark mode */
+  body.dark-mode .bl-b { background: #5a1a1f; color: #e8a0a5; }
+  body.dark-mode .bl-i { background: #5a3a10; color: #e8c090; }
+  body.dark-mode .bl-n { background: #1a4a30; color: #80d4a8; }
+  body.dark-mode .bl-g { background: #1a3050; color: #80b0d8; }
+  body.dark-mode .bl-o { background: #3a1a4a; color: #c090d8; }
+  /* Zigzag banners — tone down in dark mode */
+  body.dark-mode .banner-top    { background: #3a1a1f; opacity: .7; }
+  body.dark-mode .banner-bottom { background: #3a3010; opacity: .7; }
+  /* Modals */
+  body.dark-mode .modal-overlay { background: rgba(0,0,0,.75); }
+  body.dark-mode .modal-box {
+    background: #16213e;
+    border-color: #4a4a6a;
+    box-shadow: 6px 6px 0 #4a4a6a;
+  }
+  body.dark-mode .modal-box h3 { color: #e8e8f0; text-shadow: none; }
+  body.dark-mode .modal-box p  { color: #c8c8e0; }
+  body.dark-mode .modal-btn    { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
+  body.dark-mode .modal-btn-no { background: #0f3460; color: #c8c8e0; }
+  body.dark-mode .modal-btn-no:hover { background: #1a3a6a; }
+  /* Options revert button */
+  body.dark-mode .option-revert-btn {
+    background: #0f3460; color: #c8c8e0;
+    border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a;
+  }
+  body.dark-mode .option-revert-btn:hover { background: #1a3a6a; }
+  /* Score section */
+  body.dark-mode .score-section {
+    background: #16213e; border-color: #4a4a6a;
+  }
+  /* Catsel error */
+  body.dark-mode .catsel-error {
+    background: #2d1b1b; border-color: #8b3a3a; color: #ff9090;
+  }
+  /* Toggle sliders */
+  body.dark-mode .toggle-slider {
+    background: #4a4a6a;
+  }
+
   /* ── LARGE TEXT MODE ── */
   body.large-text .bingo-cell {
     font-size: clamp(0.88rem, 2.4vw, 1.1rem);
@@ -675,6 +854,138 @@
   .modal-btn-yes:hover { background: #c1121f; }
   .modal-btn-no  { background: var(--cream); color: var(--navy); }
   .modal-btn-no:hover  { background: #ffe9a0; }
+  /* ── MULTIPLAYER / SUPABASE ── */
+  .mp-section {
+    max-width: 900px; margin: 22px auto 0;
+    background: white; border: 3px solid var(--navy);
+    border-radius: 14px; box-shadow: 5px 5px 0 var(--navy); overflow: hidden;
+  }
+  .mp-header {
+    background: var(--navy); padding: 12px 18px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; user-select: none;
+  }
+  .mp-header h2 { font-family:'Permanent Marker',cursive; color:var(--yellow); font-size:1.3rem; text-shadow:2px 2px 0 var(--red); }
+  .mp-toggle { font-family:'Fredoka One',cursive; color:rgba(255,255,255,.7); font-size:.9rem; }
+  .mp-body { padding: 16px 20px; }
+  .mp-body.collapsed { display: none; }
+  .mp-hint {
+    font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:12px; line-height:1.5;
+  }
+  .mp-name-row {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .mp-name-input {
+    font-family:'Nunito',sans-serif; font-weight:700; font-size:.95rem;
+    padding: 8px 12px; border: 2px solid var(--navy); border-radius: 8px;
+    outline: none; flex: 1; min-width: 120px; color: var(--navy);
+  }
+  .mp-code-wrap {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .mp-join-btn {
+    font-family:'Permanent Marker',cursive; font-size:.95rem;
+    padding: 8px 18px; background: var(--dkgreen); color: white;
+    border: 3px solid var(--navy); border-radius: 10px; cursor: pointer;
+    box-shadow: 3px 3px 0 var(--navy); white-space: nowrap;
+    transition: transform .08s, box-shadow .08s;
+  }
+  .mp-join-btn:hover { background: #047a56; }
+  .mp-join-btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--navy); }
+  .mp-leave-btn {
+    font-family:'Fredoka One',cursive; font-size:.82rem;
+    padding: 5px 12px; background: white; color: var(--red);
+    border: 2px solid var(--red); border-radius: 8px; cursor: pointer;
+    box-shadow: 2px 2px 0 var(--red); white-space: nowrap;
+  }
+  .mp-leave-btn:hover { background: #fff0f0; }
+  .mp-status { font-size:.78rem; font-weight:600; color:#888; font-style:italic; margin-bottom:8px; }
+  .mp-status.connected { color: var(--dkgreen); font-style:normal; font-size:.82rem; }
+  .mp-status.error { color: var(--red); font-style:normal; }
+  .mp-active-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  }
+  .mp-code-pill {
+    font-family:'Fredoka One',cursive; font-size:.85rem; color: var(--navy);
+    background: var(--cream); border: 2px solid var(--navy);
+    border-radius: 20px; padding: 3px 12px; letter-spacing: 1px;
+  }
+  .mp-scoreboard-title {
+    font-family:'Fredoka One',cursive; font-size:1rem; color:var(--navy); margin-bottom:8px;
+  }
+  .mp-players { display: flex; flex-direction: column; gap: 6px; }
+  .mp-player-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; background: var(--cream);
+    border: 2px solid #e0e0e0; border-radius: 10px; transition: border-color .2s;
+  }
+  .mp-player-row.me { border-color: var(--blue); background: #f0f9ff; }
+  .mp-player-row.bingo-flash { animation: bingoFlash .6s ease 3; }
+  @keyframes bingoFlash { 0%,100%{background:var(--cream)} 50%{background:#fff5b0} }
+  .mp-player-name { font-weight:800; color:var(--navy); flex:1; font-size:.88rem; }
+  .mp-player-score { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--red); }
+  .mp-player-bingos { font-size:.75rem; color:#888; }
+  .mp-player-you { font-size:.7rem; color:var(--blue); font-weight:800; }
+  .bingo-toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: var(--yellow);
+    font-family:'Permanent Marker',cursive; font-size:1.1rem;
+    padding: 12px 24px; border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    z-index: 9999; opacity: 0; pointer-events: none;
+    transition: opacity .3s; white-space: nowrap;
+  }
+  .bingo-toast.show { opacity: 1; }
+
+  /* ── CHAT ── */
+  .mp-chat { margin-top: 14px; }
+  .mp-chat-title {
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    color: var(--navy); margin-bottom: 8px;
+  }
+  .mp-chat-messages {
+    height: 160px; overflow-y: auto;
+    background: var(--cream); border: 2px solid #e0e0e0;
+    border-radius: 10px; padding: 8px 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    scroll-behavior: smooth;
+  }
+  .mp-chat-msg {
+    font-size: .82rem; line-height: 1.4;
+    word-break: break-word;
+  }
+  .mp-chat-msg .msg-name {
+    font-weight: 800; color: var(--navy); margin-right: 4px;
+  }
+  .mp-chat-msg.msg-me .msg-name { color: var(--blue); }
+  .mp-chat-msg.msg-system {
+    color: #888; font-style: italic; font-size: .75rem; text-align: center;
+  }
+  .mp-chat-input-row {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+  .mp-chat-input {
+    flex: 1; font-family: 'Nunito', sans-serif; font-weight: 600;
+    font-size: .9rem; padding: 8px 12px;
+    border: 2px solid var(--navy); border-radius: 8px; outline: none;
+  }
+  .mp-chat-input:focus { border-color: var(--blue); }
+  .mp-chat-send {
+    font-family: 'Permanent Marker', cursive; font-size: .9rem;
+    padding: 8px 16px; background: var(--blue); color: white;
+    border: 3px solid var(--navy); border-radius: 10px; cursor: pointer;
+    box-shadow: 3px 3px 0 var(--navy);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .mp-chat-send:hover { background: #0d6e8f; }
+  .mp-chat-send:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--navy); }
+  /* Dark mode chat */
+  body.dark-mode .mp-chat-messages { background: #0f3460; border-color: #4a4a6a; }
+  body.dark-mode .mp-chat-msg .msg-name { color: #c8c8e0; }
+  body.dark-mode .mp-chat-msg { color: #c8c8e0; }
+  body.dark-mode .mp-chat-input { background: #0f3460; color: #e8e8f0; border-color: #4a4a6a; }
+  body.dark-mode .mp-chat-send { border-color: #4a4a6a; box-shadow: 3px 3px 0 #4a4a6a; }
+  body.dark-mode .mp-chat-title { color: #c8c8e0; }
 </style>
 </head>
 <body>
@@ -703,30 +1014,69 @@
 </div>
 
 <div class="card-outer" id="cardOuter"></div>
-<div class="win-banner" id="winBanner"><div class="win-text">🎉 BINGO! 🎉</div></div>
+<canvas id="confettiCanvas"></canvas>
+<div class="win-banner" id="winBanner">
+  <div class="win-text" onclick="celebrate()" style="cursor:pointer;" title="Tap to celebrate!">🎉 BINGO! 🎉</div>
+</div>
 
 <div class="score-section" id="scoreSection">
   <div class="score-title">📊 Current Score: <span class="score-num" id="scoreVal">0.00</span></div>
 </div>
 
-<div class="game-code-bar">
-  <div class="game-code-title">🎮 Game Code</div>
-  <div class="game-code-hint">Share this code with friends so they can play the same card.</div>
-  <div class="game-code-row">
-    <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9" readonly>
-    <button class="game-code-copy" onclick="copyGameCode()">📋 Copy</button>
+<div class="mp-section">
+  <div class="mp-header" onclick="toggleMP()">
+    <h2>👥 Play with Friends</h2>
+    <span class="mp-toggle" id="mpToggle">▼ Show</span>
   </div>
-  <hr class="game-code-divider">
-  <div class="game-code-join-label">Already have a code? Enter it below to play the same card as a friend.</div>
-  <div class="game-code-join-row">
-    <input class="game-code-join-input" id="gameCodeJoinInput" placeholder="YARD-1234" maxlength="9">
-    <button class="btn-join" onclick="joinGame()">Join</button>
-  </div>
-  <div class="game-code-joined" id="gameCodeDisplay">
-    ✓ Joined: <span id="gameCodeText"></span>
-    <button class="game-code-leave" onclick="clearGameCode()">✕ Leave</button>
+  <div class="mp-body collapsed" id="mpBody">
+
+    <!-- Join area (shown before connected) -->
+    <div id="mpJoinArea">
+      <div class="mp-hint">Enter your name and your room code to play with friends in real time. Share your room code so others can join.</div>
+      <div style="font-size:.72rem; color:#aaa; margin-bottom:10px; font-style:italic;">
+        By joining a room you agree to our <a href="#" onclick="showTerms(); return false;" style="color:#888; text-decoration:underline;">Terms of Use</a>. Be respectful — this is a game for friends.
+      </div>
+      <div class="mp-name-row">
+        <input class="mp-name-input" id="mpNameInput" placeholder="Your name" maxlength="20">
+        <div class="mp-code-wrap">
+          <input class="game-code-input" id="gameCodeInput" placeholder="YARD-1234" maxlength="9">
+          <button class="game-code-copy" onclick="copyGameCode()" title="Copy room code">📋</button>
+        </div>
+        <button class="mp-join-btn" onclick="mpJoin()">Join Room</button>
+      </div>
+      <div class="mp-status" id="mpStatus">Playing solo — join a room to share live scores with friends.</div>
+    </div>
+
+    <!-- Active area (shown when connected) -->
+    <div id="mpActiveArea" style="display:none;">
+      <div class="mp-active-header">
+        <div id="mpActiveStatus" class="mp-status connected"></div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="mp-code-pill">🎮 <strong id="mpActiveCode"></strong></span>
+          <button class="game-code-copy" onclick="copyGameCode()" title="Copy code">📋 Copy</button>
+          <button class="mp-leave-btn" onclick="mpLeave()">Leave</button>
+        </div>
+      </div>
+      <div class="mp-scoreboard-title">🏆 Live Scores</div>
+      <div class="mp-players" id="mpPlayers"></div>
+
+      <!-- Chat -->
+      <div class="mp-chat">
+        <div class="mp-chat-title">💬 Chat</div>
+        <div class="mp-chat-messages" id="mpChatMessages"></div>
+        <div class="mp-chat-input-row">
+          <input class="mp-chat-input" id="mpChatInput" placeholder="Say something… 😄" maxlength="120"
+            onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button class="mp-chat-send" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<!-- Bingo toast notification -->
+<div class="bingo-toast" id="bingoToast"></div>
 
 <div class="rules-section">
   <div class="rules-header" onclick="toggleRules()">
@@ -735,14 +1085,14 @@
   </div>
   <div class="rules-body collapsed" id="rulesBody">
     <ol>
-      <li>You do <strong>not</strong> have to purchase the item in order to check it off your list.</li>
+      <li>You do <strong>NOT</strong> have to purchase the item in order to check it off your list.</li>
       <li>You may <strong>NOT</strong> elicit external assistance — doing so will result in the disqualification of any items at the current sale (whether or not the external assistance proved helpful).</li>
       <li>For an item to count, while at the sale you must <strong>show the item to your opponent and get approval</strong> before sign-off. Discretion is advised, in case of arbitration (see Rule 7).</li>
       <li>Unless specifically noted in the category, the <strong>actual item must be found</strong>. Photos or images of the item are insufficient in most instances.</li>
       <li>Items must be signed off <strong>at the current sale</strong>. Items recalled from previous sales do not count.</li>
       <li>Items must be signed off on the <strong>first visit</strong> in a given day. Returning to a sale to sign off an item is prohibited.</li>
-      <li>If there is a debate about whether an item qualifies, you may present the item to the proprietor with a <strong>completely neutral question</strong>. <em>"Ma'am, what would you say this item is?"</em> is acceptable. <em>"Is this a floor lamp?"</em> is not. If the proprietor answers with the exact item name, the box is awarded.</li>
-      <li>A given item can only count towards a <strong>single square</strong>.</li>
+      <li>If there is a debate about whether an item qualifies, you may present the item to the proprietor with a <strong>completely neutral question</strong>. <em>"Ma'am, what would you say this item is?"</em> is acceptable. <em>"Is this a <u>floor lamp</u>?"</em> is not. If the proprietor answers with the exact item name, the box is awarded.</li>
+      <li>Any found item can only count towards a <strong>single square</strong>.</li>
     </ol>
     <div class="scoring-block">
       <h3>🏆 Scoring (Rules 9 &amp; 10)</h3>
@@ -750,6 +1100,7 @@
         <li>The game ends at the <strong>end of the excursion</strong>, not when a Bingo is announced.</li>
         <li>For each <strong>BINGO</strong>: +1 point</li>
         <li>For each <strong>filled-in square</strong>: +0.01 point</li>
+        <li>For each <strong>4-in-a-row</strong> (tiebreaker, not part of a BINGO): +0.001 point</li>
         <li>Scores range from <strong>0.01 to 17.25</strong> — winning scores are often in the <strong>0.09–2.13</strong> range.</li>
       </ul>
     </div>
@@ -772,7 +1123,7 @@
       </div>
     </label>
     <label class="option-row" for="optSound">
-      <span class="option-text">Sound Effects
+      <span class="option-text">Sound effects
         <span>Play a sound when you mark a square or get a BINGO</span>
       </span>
       <div class="toggle-switch">
@@ -780,12 +1131,21 @@
         <span class="toggle-slider"></span>
       </div>
     </label>
-    <label class="option-row" for="optConfirmAll">
-      <span class="option-text">Always confirm before marking a square
-        <span>Adds a tap-to-confirm step before marking any cell</span>
+    <label class="option-row" for="optShowScore">
+      <span class="option-text">Show score
+        <span>Display the current score below the card</span>
       </span>
       <div class="toggle-switch">
-        <input type="checkbox" id="optConfirmAll" onchange="saveOptions()">
+        <input type="checkbox" id="optShowScore" checked onchange="applyShowScore(); saveOptions()">
+        <span class="toggle-slider"></span>
+      </div>
+    </label>
+    <label class="option-row" for="optFreeSpace">
+      <span class="option-text">Free space (center square)
+        <span>The center square is automatically marked for free</span>
+      </span>
+      <div class="toggle-switch">
+        <input type="checkbox" id="optFreeSpace" onchange="applyFreeSpace(); updateScore(); saveState(); saveOptions()">
         <span class="toggle-slider"></span>
       </div>
     </label>
@@ -798,12 +1158,12 @@
         <span class="toggle-slider"></span>
       </div>
     </label>
-    <label class="option-row" for="optShowScore">
-      <span class="option-text">Show score
-        <span>Display the current score below the card</span>
+    <label class="option-row" for="optConfirmAll">
+      <span class="option-text">Always confirm before marking a square
+        <span>Adds a tap-to-confirm step before marking any cell</span>
       </span>
       <div class="toggle-switch">
-        <input type="checkbox" id="optShowScore" checked onchange="applyShowScore(); saveOptions()">
+        <input type="checkbox" id="optConfirmAll" onchange="saveOptions()">
         <span class="toggle-slider"></span>
       </div>
     </label>
@@ -824,16 +1184,6 @@
         <span class="radio-text"><strong>Vertical</strong> <span>— sidebar labels beside each column</span></span>
       </label>
     </div>
-    <label class="option-row" for="optFreeSpace">
-      <span class="option-text">Free space (center square)
-        <span>The center square is automatically marked for free</span>
-      </span>
-      <div class="toggle-switch">
-        <input type="checkbox" id="optFreeSpace" onchange="applyFreeSpace(); saveOptions()">
-        <span class="toggle-slider"></span>
-      </div>
-    </label>
-
     <!-- Game Mode -->
     <div class="option-group">
       <div class="option-group-title">🏆 Game Mode (Scoring)</div>
@@ -842,13 +1192,9 @@
         <input type="radio" name="gameMode" id="mode1line" value="1line" onchange="saveOptions()">
         <span class="radio-text"><strong>1 Line</strong> <span>(default) — first BINGO wins</span></span>
       </label>
-      <label class="option-radio-row" for="mode2line">
-        <input type="radio" name="gameMode" id="mode2line" value="2line" onchange="saveOptions()">
-        <span class="radio-text"><strong>2 Lines</strong> <span>— need two BINGOs</span></span>
-      </label>
       <label class="option-radio-row" for="modeFullCard">
         <input type="radio" name="gameMode" id="modeFullCard" value="fullcard" onchange="saveOptions()">
-        <span class="radio-text"><strong>Full Card</strong> <span>— all 25 squares marked</span></span>
+        <span class="radio-text"><strong>Blackout!</strong> <span>— all 25 squares marked</span></span>
       </label>
       <label class="option-radio-row" for="modeT">
         <input type="radio" name="gameMode" id="modeT" value="Tshape" onchange="saveOptions()">
@@ -856,14 +1202,13 @@
       </label>
       <label class="option-radio-row" for="modeCross">
         <input type="radio" name="gameMode" id="modeCross" value="cross" onchange="saveOptions()">
-        <span class="radio-text"><strong>Cross</strong> <span>— middle row + middle column</span></span>
+        <span class="radio-text"><strong>X Marks the Spot</strong> <span>— middle row + middle column</span></span>
       </label>
       <label class="option-radio-row" for="modeCorners">
         <input type="radio" name="gameMode" id="modeCorners" value="corners" onchange="saveOptions()">
         <span class="radio-text"><strong>4 Corners</strong> <span>— all four corner squares</span></span>
       </label>
     </div>
-
     <!-- Revert to Defaults -->
     <div class="option-revert-wrap">
       <button class="option-revert-btn" onclick="askRevertDefaults()">↩ Revert to Defaults</button>
@@ -877,28 +1222,31 @@
     <span class="catsel-toggle" id="catselToggle">▼ Show</span>
   </div>
   <div class="catsel-body collapsed" id="catselBody">
-    <div class="catsel-hint">Mark categories as <strong>Required</strong> (always on the card) or <strong>Hidden</strong> (never on the card). Max 5 required. Must leave at least 5 available.</div>
+    <div class="catsel-hint">Slide each category toward 🟢 <strong>Required</strong> to guarantee it appears, toward 🔴 <strong>Hidden</strong> to exclude it, or leave in the middle to weight it more or less likely. Max 5 required; must keep at least 5 available.</div>
+    <div class="catsel-legend">
+      <span class="leg-hidden">🔴 Hidden</span>
+      <span class="leg-neutral">⚫ Normal</span>
+      <span class="leg-required">🟢 Required</span>
+    </div>
     <div class="catsel-counters">
       <div class="catsel-counter">Required: <span id="reqCount">0</span> / 5</div>
       <div class="catsel-counter">Hidden: <span id="hidCount">0</span></div>
-      <div class="catsel-counter">Available: <span id="availCount">23</span></div>
+      <div class="catsel-counter">Available: <span id="availCount">24</span></div>
     </div>
     <div class="catsel-error" id="catselError"></div>
-    <table class="catsel-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>⭐ Required</th>
-          <th>🚫 Hidden</th>
-        </tr>
-      </thead>
-      <tbody id="catselRows"></tbody>
-    </table>
+    <div id="catselRows"></div>
+    <div class="option-revert-wrap" style="margin-top:14px;">
+      <button class="option-revert-btn" onclick="resetCatSel()">↩ Reset Categories to Default</button>
+    </div>
   </div>
 </div>
 
+<div class="banner-footer-top"></div>
+<div class="banner-footer-bottom"></div>
 <div class="copyright">
-  <a href="mailto:garagesalebingo@gmail.com" style="color:#888; text-decoration:underline; font-style:italic; font-size:.72rem;">Questions or comments?</a>
+  <a href="mailto:garagesalebingo@gmail.com">Questions or comments?</a>
+  &nbsp;·&nbsp;
+  <a href="#" onclick="showTerms(); return false;">Terms of Use</a>
   <br>
   © 2026 Yardingo. All game content, rules, and design are the property of Rob Barnett. All rights reserved.
 </div>
@@ -906,34 +1254,75 @@
 
 
 <script>
+/* ── SUPABASE CONFIG (defined first so initSupabase can reference them) ── */
+const SUPABASE_URL = 'https://worjugymwmxjgoeysccm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvcmp1Z3ltd214amdvZXlzY2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5ODE5MDIsImV4cCI6MjA5MjU1NzkwMn0.pCF_5O4sLGBI6Nd2I7-uO5myvR7b3d9OkDEdAH2R3yI';
+
+// Multiplayer state — declared here so initSupabase can reference them immediately
+let sb             = null;
+let mpPlayer       = null;
+let mpChannel      = null;
+let mpPlayerId     = null;
+
 /* ── DATA ── */
 const CATEGORIES = {
-  "Sale Specific":      ["Helium Balloon","10+ signs for the same sale","Pink Lemonade Stand","Grilled Food (at sale)","Rummage Sale","Sunday Signage","Two Signs on One Stick","Cardboard Sign","Sign Says Distance in Miles","Meme on Sign (Trump, Poop Emoji, etc.)","Multi-Family Garage Sale","Estate Sale","Brick Fascade","Vintage Car for Sale","Boat for Sale","Sale continues in house","Lemonade Stand (kid < 5 years old)","Sale on Driveway, Lawn, & Garage","Garage Sale sign in yard"],
-  "Characters (Can be images)":["Rubeus Hagrid (Harry Potter)","Starscream (Transformers)","Brainy Smurf","Luigi (Super Mario Bros)","Patrick Star (Spongebob)","Spiderman","Dora the Explorer","Batman & Robin (both)","Thomas the Train","Tigger (Winnie the Poo)","Mickey Mouse","Cabbage Patch Kid","Tinkerbell","Bugs Bunny","Bart Simpson","Hello Kitty","Power Ranger (Blue)","the Lorax (Dr. Seuss)","Grover (Sesame Street)"],
-  "Toys":               ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz"],
-  "Games":              ["Trivial Pursuit","Rummikub","Apples 2 Apples","800+ Piece Puzzle","Cranium","Magic Cards or Pokemon","SORRY!","$20+ Board Game","LIFE","Board Game in Original Shrinkwrap","Poker Chips","Monopoly (not themed)","Monopoly (themed)","Risk (themed)","Rubiks Cube","DVD or VHS based game","Cards Against Humanity","Game dated before 1990","Digital version of Board Game"],
-  "Shoppers":           ["Manta","The Kraken","High School / College Classmate","Recidivist (Seen at other sale earlier today)","Barnacle Bob","Haggler in Luxury Car","Haggler on item <=$1","Family of 5+","Mixed Race Couple","Person over 6ft 2in","Sunvisor or Fanny Pack Wearer","Shopper eating (food not from this sale)","Has Change Purse or Money Changer","Shopper with Headphones","Non-English Speaker","Won't Leave the Car","Wearing Shorts & Hoodie","Grandparent & Grandkid","Your Neighbor (name known in advance)"],
-  "Kitchen":            ["Martini Glass","Tupper Ware","Travel Mug","Chaffing Dish","Kitchen Sink","German Beer Stein","Wine Stopper","Kiss the Cook item","Cheese Grater","Cast Iron Skillet","Knife Block","Plastic Cereal Cannisters","Stainless Steel Trashcan","Salad Spinner","Pizza Stone","Strainer","Ice Cream Scoop","Pot Holder","Melon Baller or Potato Peeler"],
-  "Appliances":         ["George Foreman Grill","Popcorn Popper","Bread Machine","Mixer","Coffee Machine","Crock Pot","Toaster Oven","Waffle Iron","Foot Spa","Mini Fridge","Chest Freezer","Microwave (Countertop)","Magic Bullet","Rice Cooker","Sewing Machine","Juicer","Pancake Griddle","Pressure Cooker","Deep Fryer / Air Fryer"],
-  "Clothes":            ["High-Heeled Shoes (Red)","Fur Coat","Baseball Cap","<$1 Sunglasses","Woman's Hat","Socks","Bra","Leather Jacket","Adult PJs with Cartoon Character","Fanny Pack","Patagonia Jacket","Converse Sneakers","Tie with Words, Scene, or Character","Wig","Lady's Hat (not Winter)","Necklace (Blue)","Bogs (Rain Boots)","LuLaRoe","Osh Kosh B'Gosh"],
-  "Holiday (Can be images)":["Snowman","Jack-o-Lantern","Heart","Shamrock","Easter Egg","Turkey","American Flag","Martin Luther King","George Washington","Fireworks","Santa Claus (figurine)","Reindeer (stuffed)","Animatronic Halloween","Easter Basket","Driedel or Menorah","Greatest Dad Souvenir","Mother's Day Souvenir","Cornucopia","Christmas Ornament"],
-  "Furniture":          ["Office Chair","Recliner","Arm Lamp","Home Made Furniture","Folding Chairs","File Cabinet","Free Furniture","Pool or Fooseball Table","Bar Stool","$250+ Furniture","Folding Table (for sale)","Dining Table w/ 5+ Chairs","Refinished Blue Furniture","Distressed Furniture","Book Shelf","Ottoman","Sofa or Loveseat","Floor Lamp","Endtable / Nightstand"],
-  "Sports":             ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock"],
-  "BrickaBrack":        ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console"],
-  "Old Tech":           ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine"],
-  "Media":              ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)"],
-  "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle"],
-  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Bird Decoys","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Chainsaw","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet"],
-  "Old Folks":          ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager"],
-  "Musical Instrument": ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine"],
-  "Misc.":              ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys"],
-  "Alaskana":           ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item"],
-  "Items in Free Box":  ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Household Cleaner","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap"],
-  "Boy Scouts":         ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map"],
-  "Rob's 50th":         ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD"]
+  "Appliances":            ["George Foreman Grill","Popcorn Popper","Bread Machine","Mixer","Coffee Machine","Crock Pot","Toaster Oven","Waffle Iron","Foot Spa","Mini Fridge","Chest Freezer","Microwave (Countertop)","Magic Bullet","Rice Cooker","Sewing Machine","Juicer","Pancake Griddle","Pressure Cooker","Deep Fryer / Air Fryer","Electric Skillet","Rotisserie Oven","4-Slot Toaster","Quesadilla Maker","Hot Dog Roller","Egg Cooker","Fondue Pot (electric)","Cotton Candy Machine","Snow Cone Maker","Espresso Machine","Keurig or Pod Coffee Maker","Margarita Machine","SodaStream","Beer Brewing Kit","Milk Frother","Little Green Steam Machine","Electric Pet Nail Trimmer","Cake Pop Maker","Electric Donut Maker","Gas Range","Front Load Laundry Pedestals","Air Fryer Accessories","Presto PopLite or Whirley Pop","Portable AC Unit","Blackstone On the Go","2+ of the same appliance at one sale","As Seen on TV appliance","Appliance still in original box","Pampered Chef appliance"],
+  "BrickaBrack":            ["Snow Globe","Novelty Salt & Pepper Shakers","Ash Tray","Garden Gnome","Mexican Memoriabilia","Hawaiian Trinket","Ceramic Chicken","Green Glassware","Animal Shaped Candle","Candy Dish","Spoon Rest","Nesting Dolls","Hand Painted Sign","Glass Vase","Bronze Statue","Disney Land / World Merchandise","Candlestick","Christmas Village","Non Working TV / Game Console","Hamilton or Franklin Mint collectible plate","Crystal paperweight","Vintage advertising tin","Ceramic or plastic fruit","Driftwood art","Macrame wall hanging","Colored glass bottles","Stained glass panel","Bobblehead (not Funko Pop)","Troll doll","Dashboard hula girl","Lava lamp","Frog statue (stone or metal)","Lucky cat (Maneki-neko)","Precious Moments figurine","Signed pottery","Vintage souvenir spoon","Souvenir thimble","Political button or bumper sticker","Vintage clock (not working)","Barometer","Kaleidoscope","Music box (working)","Bookend set"],
+  "Characters (Can be images)":            ["Rubeus Hagrid (Harry Potter)","Starscream (Transformers)","Brainy Smurf","Luigi (Super Mario Bros)","Patrick Star (Spongebob)","Spiderman","Dora the Explorer","Batman & Robin (both)","Thomas the Train","Tigger (Winnie the Poo)","Mickey Mouse","Cabbage Patch Kid","Tinkerbell","Bugs Bunny","Bart Simpson","Hello Kitty","Power Ranger (Blue)","the Lorax (Dr. Seuss)","Grover (Sesame Street)","Yogi Bear","Scooby Doo","Tweety Bird","Goofy","Cruella de Vil","Bambi","Cinderella","Chip or Dale (chipmunks)","He-Man","Optimus Prime","Care Bear (any)","My Little Pony (original)","Donkey Kong","Pac-Man","Sonic the Hedgehog","Pikachu","Link (Legend of Zelda)","Grimace (McDonald's)","The Noid (Domino's)","Charizard","Bulbasaur","Ren & Stimpy","Inspector Gadget","Animaniacs (Yakko, Wakko, or Dot)","The Tick"],
+  "Clothes":            ["High-Heeled Shoes (Red)","Fur Coat","Baseball Cap","<$1 Sunglasses","Woman's Hat","Socks","Bra","Leather Jacket","Adult PJs with Cartoon Character","Fanny Pack","Patagonia Jacket","Converse Sneakers","Tie with Words, Scene, or Character","Wig","Lady's Hat (not Winter)","Necklace (Blue)","Bogs (Rain Boots)","LuLaRoe","Osh Kosh B'Gosh","Sequined or bedazzled item","Bridesmaid or prom dress","Military uniform or jacket","Bowling shirt with a name on it","Matching tracksuit","Referee or umpire shirt","Chef's coat or apron","Denim jacket","Flannel shirt","Cowboy boots","Rain poncho","Winter vest (puffer)","Wool sweater","Overalls (adult)","Metallica or Rolling Stones t-shirt","Sports jersey (pro team)","Tie-dyed (non t-shirt)","Made in USA tag on any item","Vintage Land's End or LL Bean","Ralph Lauren Polo","Members Only jacket","Izod Lacoste (vintage crocodile)","Bolo tie","Belt with large buckle","Suspenders","Silk scarf","Trucker hat with local business","Visor","Leg warmers","Vacation t-shirt from before 2000","Monogrammed clothing","Ugly Christmas sweater","Uniform from a job (name tag still on)","Shirt with shoulder pads","Hypercolor shirt"],
+  "For Her":            ["Iron","Yarn","Photo Album","Throw Pillow","Curling Iron","Vaccuum Cleaner","Pampered Chef (in box)","Hummel Figurine","Wicker Basket","Photo frame that says Family","Patchwork Stuffed Animal","Quilt","Wine Glasses","Scrapbooking Stamps","Romance Novel","Item with Sunflowers on it","Paint Night painting","Beaded Necklace","Woman's Bicycle","Knitting needles and pattern","Cross stitch kit or finished piece","Fabric collection","Cricut machine or cartridge","Rubber stamp collection","Scrapbook (completed)","Pressed flower art","Candle collection","Decorative wreath","Floral arrangement (silk)","Decorative letters (wall)","Mason jar collection","Farmhouse sign","Chalk painted item","Burlap decoration","Woman's perfume","Hat box","Jewelry box","Brooch or lapel pin","Tea set (complete)","Cake decorating kit","Cookie jar","Vintage recipe box","Pie server set","Punch bowl set","Personalized cutting board","Item with Oprah Winfrey on it","Longaberger basket","Vera Bradley bag","Mary Kay or Avon item","PartyLite candle (in box)","Yankee Candle (orange)","Thirty-One bag or organizer","Tupperware (vintage harvest gold)","Scentsy warmer or wax","Pampered Chef stoneware","Tastefully Simple item","Princess House crystal or cookware","Home Interiors figurine or picture","Bath & Body Works gift set","Coach purse or wallet","Dooney & Bourke bag","Willow Tree figurine","Swarovski crystal piece"],
+  "For Him":            ["Animal Head or Pelt","Screwdriver","Tool (in package)","Tent","Fishing Pole","Drill (Dewalt or Black-n-Decker)","Stud Finder","Box o Cables","Lawn Mower","Carhardtts","Air Compressor","Ladder","BBQ Grill Accessories","Stereo with no HDMI plugins","Electric Sander","Hunting Bow","Motorcycle Helmet","Socket wrench set","Level (48 inch or larger)","Fishing net or gaff","Ammo box (empty)","Canadian Goose decoy","Jack stands","Creeper (mechanic's rolling board)","Jumper cables","Battery charger","Smoker (any size)","Cooler (50+ gallon)","ATV or dirt bike gear","Weight bench","Archery target","Billiard cue","Poker chip set (300+ chips)","Bar sign (neon or metal)","Wall mount bottle opener","5+ shot glasses at one sale","Sports bar stool","Foosball table","Air hockey table","Signed sports photo","Chainsaw","Shaving kit (straight razor)","Cigar box or humidor","Military memorabilia","Pocket watch collection","Dickies work pants","Hard hat","Blaze orange vest","Cowboy hat","Suspenders (wide)","Letterman jacket","Hawaiian shirt (loud pattern)"],
+  "Furniture":            ["Office Chair","Recliner","Arm Lamp","Home Made Furniture","Folding Chairs (not camping)","File Cabinet","Free Furniture","Pool or Fooseball Table","Bar Stool","$250+ Furniture","Folding Table (for sale)","Dining Table w/ 5+ Chairs","Refinished Blue Furniture","Distressed Furniture","Book Shelf","Ottoman","Sofa or Loveseat","Floor Lamp","Endtable / Nightstand","Rocking chair","Papasan chair","Bean bag chair","Chaise lounge","Camping chair","Director's chair","Drafting table","Coffee table with storage","Nesting tables (set)","Picnic table","Armoire or wardrobe","Chest of drawers","Hope chest or cedar chest","Steamer trunk","Blanket ladder","Headboard only","Bunk bed frame","Murphy bed","Patio set","Wicker furniture","Park bench","Furniture with original price tag","China cabinet or Curio cabinet","Shoe rack","Furniture with moving tags still attached","Furniture with items still inside a drawer","Furniture with name written on the back","Furniture with a sold sign on it","Entire bedroom set for sale"],
+  "Games":            ["Trivial Pursuit","Rummikub","Apples 2 Apples","800+ Piece Puzzle","Cranium","Magic Cards or Pokemon","SORRY!","$20+ Board Game","LIFE","Board Game in Original Shrinkwrap","Poker Chips","Monopoly (not themed)","Monopoly (themed)","Risk (themed)","Rubiks Cube","DVD or VHS based game","Cards Against Humanity","Game dated before 1990","Digital version of Board Game","Card game w/ rubber band (no box)","Chess set w/ mismatched pieces","Dominoes w/ cigarette or alcohol backs","Battleship (Electronic version)","Scrabble (Deluxe or Rotating Board)","Candy Land (dated before 2010)","Chutes and Ladders","Operation (w/ working batteries)","Jenga (Giant size)","Guess Who","Trouble","Pandemic","Settlers of Catan","Ticket to Ride","Sequence","Balderdash","Chess or Checkers (magnetized)","Deluxe / Gold Edition board game","Cards Against Humanity set over $49","Collector's Tin board game","Foreign Language Edition board game","Game with a name written inside the lid","Murder mystery dinner game","Sports-specific trivia game","Religious or Bible-themed game","Drinking game (non-card)","Dice game in a tin or tube","Educational math card game","Pictionary","Taboo (with working buzzer)","Telestrations","Cribbage board (hand carved or wooden)"],
+  "Holiday (Can be images)":            ["Snowman","Jack-o-Lantern","Heart","Shamrock","Easter Egg","Turkey","American Flag","Martin Luther King","George Washington","Fireworks","Santa Claus (figurine)","Reindeer (stuffed)","Animatronic Halloween","Easter Basket","Driedel or Menorah","Greatest Dad Souvenir","Mother's Day Souvenir","Cornucopia","Christmas Ornament","Nativity scene (full)","Witch Hat","Valentine's Day stuffed animal","St. Patrick's Day beer mug","Uncle Sam","Mardi Gras mask","Maypole or May basket","Graduation cap","New Year's top hat","Pilgrim figurine","Cupid","Groundhog","Holiday cookie cutter set","Sugar Skull"],
+  "Home Improvement":            ["Shower head (new in box)","Faucet (new in box)","Pipe wrench","Teflon tape","Toilet flapper or fill valve","PVC pipe","Wire nuts","Electrical conduit","Junction box","Extension cord (heavy duty)","Voltage meter","Dimmer switch","GFCI outlet (new)","Electrical tape (not black)","Circuit breaker","Loose tile","Laminate flooring (partial box)","Paint tray and liners","Paint sprayer","Caulking gun","Framing square","Nail gun","Miter box (manual)","Bag of bolts or screws","Picture hanging hardware","Window screen repair kit","Tape measure (25ft+)","Laser level","Chalk snap line","Plumb bob","Safety glasses","Sawhorses (pair under $15)","Sandpaper","Door knob set (new in package)","Outdoor light fixture","Solar panel","Shingles (partial bundle)","Cabinet hinges (new pack)","Drawer slides (set)","Wood filler"],
+  "Items in Free Box":            ["Matching plasticware & lid","Marker","Broken toy","Mistmatched gloves","Outdated Calendar","Old Magazine","Keychain","Bent coat hanger","VHS or Cassette","Wallet","Deflated sports ball","Chipped mug","Plastic Flower Pot","Bug Spray","Cleaning Tool","Yard Tool","Outdated model phone case","Trucker Cap","Remote control (no batteries)","Instruction manual (no product)","Partially used candle","McDonald's toy","Used gift wrap or ribbon","Foam pool noodle","Trophy with someone else's name","Framed photo of strangers","Hotel toiletries (unopened)","Foreign coin","Partially used spice jar","Reusable grocery bag (worn)","Bread bag clips","Takeout menu collection","Paper plates (partial pack)","Non-spice food item","WD-40","Pine Sol","Cassette tape with no label","Empty spray bottle","Stained throw pillow","Novelty pen that doesn't write","Airport luggage tag","Swag from a defunct business","Armor-All","Duct Tape","Kids meal toy (not McDonald's)","Plastic bead necklace","Item with a feather on it"],
+  "Kitchen":            ["Martini Glass","Tupper Ware","Travel Mug","Chaffing Dish","Kitchen Sink","German Beer Stein","Wine Stopper","Kiss the Cook item","Cheese Grater","Cast Iron Skillet","Knife Block","Plastic Cereal Cannisters","Stainless Steel Trashcan","Salad Spinner","Pizza Stone","Strainer","Ice Cream Scoop","Pot Holder","Melon Baller or Potato Peeler","Rolling Pin","Ice Cube Tray","Odd Shape or Engraved Cutting Board","Metal Colander","Mixing Bowl Set","Measuring Cups","Wooden Spoon Set","Muffin Tin","Baking Sheet","Casserole Dish","Electric Can Opener","Bottle Opener","Corkscrew","Dish Rack","Apron","Kitchen Timer","Spice Rack","Paper Towel Holder","Oven Mitts","Bundt Pan","Springform Pan","Dutch Oven","Wok","Fondue Set","Butter Dish","Gravy Boat","Cake Stand","Bread Box","Mandoline Slicer","Mortar & Pestle","Oil & Vinegar Set","Pie Dish","Souffle Dish","Deviled Egg Tray","Punch Bowl Set","Cocktail Shaker","Jello Mold","Tea Kettle","Crepe Pan","Corn Cob Holders"],
+  "Media":            ["Rom-Com on VHS","Country Music on Cassette","Self Help Book","Diet Book","Audio Book","70s Pop Music","Blue Ray for $1","Exercise DVD","Kevin Bacon Movie (Actor)","Blank VHS or Cassette","Bootleg VHS","Diskman","John Hughes Movie (Director)","Pink Floyd or Black Sabbath (Vinyl)","Book on Tape / CD","Thesaurus or Encyclopedia","Stephen King Novel (hardback)","Green Eggs & Ham","Harry Potter (book)","Choose Your Own Adventure book","Cookbook (celebrity chef)","Romance novel (Fabio cover)","Hardy Boys or Nancy Drew","Encyclopedia Britannica set","Readers Digest","Chiltons auto repair manual","8-track tape","Mixed tape (handwritten label)","Full TV series on DVD","Sealed vinyl (never opened)","Disney VHS (black diamond edition)","Betamax tape","LaserDisc","3D Blu-Ray","Movie poster (original)","National Geographic collection","Life magazine (vintage)","Sports Illustrated Swimsuit edition","Rolling Stone (vintage)","Marvel comic book","Archie comic book","Vintage catalog (Sears, JC Penney)","Vintage newspaper (major headline)","PC game in box","Bible with pictures","Pulp Fiction on DVD","Book with 600-800 pages","Reba or Dolly cassette","Farmers Almanac","Medical or law reference book","Biography of a US President","Art instruction book"],
+  "Misc.":            ["Fire Poker","2ft+ Clock","Ceiling Fan","Gold Light Fixture","Sea Shells","Rain Stick","Street Sign","Homemade Pottery","Child's Car Seat","Crutches","Tires","Map or Globe","Propane Tank","Washboard","Loose Key","Picture Frame","Watch","Shelf","Dog / Cat Toys","Doorbell (wired or wireless)","Door knocker","House numbers (metal)","Curtain rods","Window blinds","Throw rug","Welcome mat","Tension rod","Light switch plates","Drawer pulls or cabinet knobs","Bird bath","Wind chime","Sprinkler head or system","Garden hose","Wheelbarrow","Stepping stones","Outdoor thermometer","Rain gauge","Flag pole","Yard ornament (metal)","Geode or crystal","Arrowhead collection","Yearbook","Paint (partial can)","Door handle or knob set","Luggage tag","Dry erase board","Mail sorter","Umbrella stand","Shoe horn","Lint roller (jumbo)"],
+  "Musical Instrument":            ["Recorder","Rockband Drum Set","Acoustic Guitar","Electric Guitar","Harmonica","Maracas","Woodwind (Flute, Sax, Clarinet)","Brass (Tuba, Trumpet, Trombone)","Drum Set (real)","Karaoke Machine","Guitar Pedal","Casio Keyboard","Stringed Instrument (besides guitar)","Upright Piano","Book of Sheet Music","Sheet Music Holder","Guitar Amplifier","Bongos","Tamborine","Ukulele","Banjo","Xylophone or marimba","Castanets","Triangle","Taiko drum","Toy piano","MIDI controller","Guitar case (hardshell)","Instrument stand","Metronome","Tuning fork","Drum throne","Instrument cable collection","Microphone (handheld)","Guitar tablature book","Piano lesson book","Reel to reel recorder","Guitar strap (decorative)","Drum sticks","Vintage music poster"],
+  "Old Folks":            ["Walker with Tennis Balls","SMTWTFS Pill Container","Hair Curlers (leave in)","Cane","No-slip Bathtub Mat","Elvis (Record or Statue)","70s Appliance (Avacado Green or Yellow)","Original Tupperware","Rotary Telephone","China set","Silverware (in wooden box)","Wingtip Shoes","Prescription Glasses","Fuzzy Slippers","Grandma or Grandpa Mug","for Dummies book","Lace Doily","Music Box","Massager","Shower chair or bench","Grabber or reacher tool","Hearing aid case","Wheelchair (manual)","Knee scooter","Compression socks","Velcro shoes","Men's cardigan sweater","Large floral brooch","Bifocal glasses (extra pair)","Large button telephone","TV tray set","Magnifying glass (large)","Letter opener","Sewing basket","Big Band vinyl","Norman Rockwell item","Precious Moments figurine","Jello mold","Church cookbook","Pressure cooker (non-electric)","Cat or frog figurine collection","Ceramic animal cookie jar","Scrapbook with old news clippings","Arm chair covers (antimacassar)","Clear plastic table cloth","Pill crusher or splitter","Coffee tin","Paint by numbers (completed)","Macrame wall hanging","Velvet painting","Wall mounted clock (ornate)","Crocheted afghan","Latch hook rug (completed)","Embroidered pillowcase set"],
+  "Old Tech":            ["Digital Camera","Cordless Phone","Flip Phone","Videogame except PC, Nintendo, Sony, or Xbox","Alarm Clock","Playstation 1 or 2","Wii at $100+","Linksys WRT54G Router","Betamax, 8-track, or HD DVD","Original NES","CRT Television","Computer Monitor < 19in","Gameboy or Game Gear","3.5in diskette","PDA (Personal Digital Assistant)","Typewriter","Computer (Apple II, i386 or older)","Portable Music Player (not iPod)","Fax Machine","Pager or beeper","Answering machine (standalone)","Walkie talkies","CB radio","Satellite phone","Nokia brick phone","Film camera (35mm)","Disposable camera (unused)","Slide projector","VHS camcorder","Boom box","iPod (original or mini)","Karaoke machine (old)","Original Game Boy Color","Sega Genesis or Super Nintendo","IBM ThinkPad (old)","Zip drive","Electric typewriter","Adding machine","Garmin or TomTom GPS","TI-83, TI-84, or TI-86 calculator"],
+  "Sale Specific":            ["Helium Balloon","10+ signs for the same sale","Pink Lemonade Stand","Grilled Food (at sale)","Rummage Sale","Sunday Signage","Two Signs on One Stick","Cardboard Sign","Sign Says Distance in Miles","Meme on Sign (Trump, Poop Emoji, etc.)","Multi-Family Garage Sale","Estate Sale","Brick Fascade","Vintage Car for Sale","Boat for Sale","Sale continues in house","Lemonade Stand (kid < 5 years old)","Sale on Driveway, Lawn, & Garage","Garage Sale sign in yard","Sign pointing the wrong way","Neon colored sign","Sign with a smiley face","Sign that says Everything Must Go","Sign that lists specific items","Sign with a QR code","Items displayed on a blanket","Clothes on a real clothing rack","Items priced with sticker dots","Sale under a canopy or tent","Books organized by genre","Sale at a church or school","Sale in an apartment complex","Gated community sale","Sale with live music","Sale with a food truck nearby","Seller in pajamas","Seller on their phone the whole time","Seller who won't negotiate","Sign says Accepts Venmo","Dog present (must ask price of dog)","Fill a bag pricing","Still has Christmas lights up"],
+  "Scouting":            ["Cub or Boy scout badge or patch","BSA Uniform","BSA documentation (book, etc.)","BSA neckerchief","Compass","Sleeping Bag","Sleeping Pad","Ultralight backpack stove","Hiking backpack","Rope","Canteen","MRE or similar","First Aid Kit","Rain Gear","Flashlight","Matches / Fire Starter","Pocketknife","Sun Glasses","Map","Pinewood Derby car or kit","2 person tent","Girl Scout uniform","Scout sash with badges","Heritage Girls or Camp Fire item","Bear canister","Headlamp","Tarp or emergency blanket","Water filter or purification tablets","Multi-tool","Hatchet or camp axe","Folding camp saw","Fire starter kit","Camp chair (small folding)","Dry bags or stuff sacks","Carabiner","Paracord (spool)","Orienteering compass","Wilderness survival guide","Plant identification guide","Bird identification guide","Camping cookbook","Scout neckerchief slide","Popcorn tin","Cookie box","Wood burning kit or project","Friendship bracelet","Nature collection (rocks, leaves, flowers)","Merit badge pamphlet"],
+  "Shoppers":            ["Manta","The Kraken","High School / College Classmate","Recidivist (Seen at other sale earlier today)","Barnacle Bob","Haggler in Luxury Car","Haggler on item <=$1","Family of 5+","Mixed Race Couple","Person over 6ft 2in","Sunvisor or Fanny Pack Wearer","Shopper eating (food not from this sale)","Has Change Purse or Money Changer","Shopper with Headphones","Non-English Speaker","Won't Leave the Car","Wearing Shorts & Hoodie","Grandparent & Grandkid","Your Neighbor (name known in advance)","Wearing full pajamas","Wearing a sports jersey","Visible tattoo sleeve","Wearing a suit","Couple in matching outfits","Pushing stroller without a baby","On phone the entire time","Brought their own bag","Brought a measuring tape","Asks 'is this your best price?' on every item","Pays entirely in coins","Couple where one is clearly reluctant","Group of 4+ women shopping together","Two strangers bonding over an item","Parent dragging a bored teenager","Elderly couple holding hands","On video call / FaceTime for approval","Still wearing their name tag from work","Someone who tips the seller","Drinking a beverage from home"],
+  "Sports":            ["Golf Clubs","Frisbee","Skiis","Bowling Ball","Fitbit / Knockoff","Soccer Ball","Knee Hockey","Weight Set","Basketball Hoop","Pink Bike","Hackysack","Football","Whiffleball","Sports Helmet","NFL Logo Gear","NHL Logo Gear","Official T-Ball Logo Item","Swim Goggles, Snorkel or Fins","Shuttlecock","Tennis racket","Easton hockey stick","Viper or Rawlings baseball bat","Croquet set","Bocce ball set","Horseshoes set","Wilson volleyball","Pink or Green yoga mat","Resistance bands","Pull up bar","Ab roller","Kettlebell","Exercise bike","Hanging punching bag","Kayak paddle","Hiking poles","BMX bike","Adult bike helmet","Roller blades","Multi-color bowling shoes","E-bike","Olympic souvenir","Signed sports item","Little League uniform","Golf bag (full set)","Snorkel set (mask + fins)","Dart board"],
+  "Toys":            ["Hot Wheels Car","Wooden Train Track","Drone","Melissa & Doug","Phineus & Ferb","Nerf Gun","2ft Doll House","Comic Book","Leapfrog","Lego Friends Set","American Girl Doll","Beanie Baby","Millenium Falcon","Fidget Spinner","Baby Rattle","Vtech Toy","Skylanders or Disney Infinity","Pirate Toy","Bratz","Etch A Sketch","Spirograph","View-Master","Lite-Brite","Silly Putty (in egg)","Slinky","Yo-Yo (Green or Wooden)","Jacks set","Marbles collection","Ken doll","Stretch Armstrong","Playmobil set","Fisher Price Little People set","Matchbox car","Erector Set","Lincoln Logs","Radio control car","Slot car track","Pogo stick","Hula hoop","Jump rope","Hacky sack","Tamagotchi","Hungry Hungry Hippos","Tech Deck (fingerboard)","M.U.S.C.L.E. or Micromachines","Bop It"],
+  "Alaskana":            ["Item with Fur Rondy Logo","Gold Pan","Berry Picker","Jade Jewelery","Fishing Float","Fur Cap or Baleen","Native Produced Art","Puffin Item","Ulu","Iditarod Print","Snowblower","Fly Tying Supplies","Ice Scraper","Crab / Shrimp Pots","Snow Shoes","Eskimo Figurine","State Flag (image)","Northern Lights (image)","Mosquito or Moose Nugget Item","Kuspuk (Alaska Native dress)","Qiviut item (musk ox wool)","Ivory carving","Totem pole","Bear paw print item","Moose antler (shed)","Whale bone carving","Salmon item (image or figure)","Dall sheep horn","Snowmachine parts or gear","Dog mushing gear","Ice fishing auger","Bunny boots","Item with Alaska Airlines logo","Mt. Marathon item","Denali or Mt. McKinley item","Alaska license plate","Alaska map (vintage)","Aurora borealis photograph","Alaskan postcard","Alaska Railroad print","North to Alaska item"],
+  "Arizona Bay":  ["Phoenix Suns jersey","Arizona Cardinals hat or helmet","Leather Sun Devils item","Saguaro cactus item","Arizona license plate","Turquoise ring","Roadrunner feather","Rattlesnake skin material","Tarantula item","Grand Canyon t-shirt","Lake Powell or Hoover Dam souvenir","Route 66 bag or map","Fry's Food Store bag","Iced tea (any brand)","Oscillating fan","Rain umbrella (unused)","Pool float or noodle","Golf tee","Pickleball paddle","Spring Training souvenir","UV umbrella or sun hat","Cooling towel","SPF 100+ sunscreen","Bolo tie","Fireworks","Dreamcatcher","Carved Kokopelli item","Car sun shade","Solar powered anything","Temperature gauge (reads over 110°F)"],
+  "Washington (the good one)":  ["Nirvana, Pearl Jam, or Soundgarden CD","Microsoft logo gear","Salmon or Orca item","Mariners branded baseball","Non-clothing Seahawks item","Item depicting Space Needle","Flannel shirt","Pike Place souvenir","Starbucks cup or mug","Frasier or Sleepless in Seattle DVD","Electric guitar or amp","Made in Washington item","Seattle tote or hat","Rock climbing gear","Casino item ending in -mish","Coleman, REI, or Thermarest sleeping bag","Blown glass","Kayak or canoe","Wooden, plastic, or ceramic apple","Sub Pop Records item","Kenny G item","Amazon smile logo item","Seattle SuperSonics item","Mt. Rainier item or photo","Olympic Peninsula souvenir","Bigfoot or Sasquatch item","Spotted owl item","Rainier or Olympia Beer glass","Fremont Troll (chia or sticker)","Seahawks Super Bowl XLVIII item","WSU scarf or earmuffs","Mt. St. Helens trinket","Item from Leavenworth","Washington state license plate","Lavender scented candle","Crabbing gear","Cartoon banana slug item","Stuffed sea otter or puffin","Plant for sale","Danner or Merrell boots","Rain gauge or umbrella","Twin Peaks on DVD"],
+  "Rob's 50th":            ["Warhammer Model","Bucees Item","Boy Scout Item","Item with Steelers Logo","Item from 1970s","Over the Hill item","D&D Book or Novel","Classic NES Game","Item with Pizza Man logo","Item w/ Hot Pepper Image","Adult Hoodie","Wig","Birthday Decoration","Birthday Card","Item with #50 on it","Converse Sneakers","Electric Guitar","Mens Pajama Pants","The League, Scrubs, or Smallville DVD","Item with Vintage label on it","Retirement themed item"],
 };
+const ALL_CATS_BASE = [
+  "Appliances",
+  "BrickaBrack",
+  "Characters (Can be images)",
+  "Clothes",
+  "For Her",
+  "For Him",
+  "Furniture",
+  "Games",
+  "Holiday (Can be images)",
+  "Home Improvement",
+  "Items in Free Box",
+  "Kitchen",
+  "Media",
+  "Misc.",
+  "Musical Instrument",
+  "Old Folks",
+  "Old Tech",
+  "Sale Specific",
+  "Scouting",
+  "Shoppers",
+  "Sports",
+  "Toys",
+  "Alaskana",
+  "Arizona Bay",
+  "Washington (the good one)",
+  "Rob's 50th"
+];
 
-const ALL_CATS   = Object.keys(CATEGORIES);
+const ALL_CATS = [...ALL_CATS_BASE];
 const COL_KEYS   = ['b','i','n','g','o'];
 const LETTERS    = ['B','I','N','G','O'];
 
@@ -1073,21 +1462,208 @@ function playBingoSound() {
   try {
     const ctx = getAudioCtx();
     if (ctx.state === 'suspended') ctx.resume();
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
+    // Fanfare: ascending arpeggio then held chord
+    const melody = [
+      { f: 523, t: 0,    dur: 0.15 },  // C5
+      { f: 659, t: 0.15, dur: 0.15 },  // E5
+      { f: 784, t: 0.30, dur: 0.15 },  // G5
+      { f: 1047,t: 0.45, dur: 0.5  },  // C6 held
+      { f: 784, t: 0.45, dur: 0.5  },  // G5 harmony
+      { f: 659, t: 0.45, dur: 0.5  },  // E5 harmony
+    ];
+    melody.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'triangle';
-      const t = ctx.currentTime + i * 0.13;
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0.4, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      osc.start(t);
-      osc.stop(t + 0.25);
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.35, start + 0.02);
+      gain.gain.setValueAtTime(0.35, start + dur - 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur);
     });
   } catch(e) {}
 }
+
+/* ── CONFETTI ── */
+let confettiRAF = null;
+let confettiParticles = [];
+const CONFETTI_COLORS = ['#e63946','#ffd166','#06d6a0','#118ab2','#7b2d8b','#f4a261','#ffffff'];
+
+function celebrate() {
+  playFanfare();
+  launchConfetti();
+}
+
+function playFanfare() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    // Big celebratory fanfare
+    const notes = [
+      { f: 523,  t: 0,    dur: 0.12 },
+      { f: 659,  t: 0.10, dur: 0.12 },
+      { f: 784,  t: 0.20, dur: 0.12 },
+      { f: 1047, t: 0.30, dur: 0.15 },
+      { f: 1319, t: 0.42, dur: 0.15 },
+      { f: 1047, t: 0.54, dur: 0.08 },
+      { f: 1319, t: 0.60, dur: 0.5  },
+      { f: 1047, t: 0.60, dur: 0.5  },
+      { f: 784,  t: 0.60, dur: 0.5  },
+    ];
+    notes.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.4, start + 0.02);
+      gain.gain.setValueAtTime(0.4, start + dur - 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur + 0.1);
+    });
+  } catch(e) {}
+}
+
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  // Add 180 new particles to the pool (cap total at 900 = 5 bursts worth)
+  const newParticles = [];
+  for (let i = 0; i < 180; i++) {
+    newParticles.push({
+      x:     Math.random() * canvas.width,
+      y:     -10 - Math.random() * 100,
+      w:     6 + Math.random() * 8,
+      h:     10 + Math.random() * 6,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      rot:   Math.random() * Math.PI * 2,
+      rotV:  (Math.random() - 0.5) * 0.2,
+      vx:    (Math.random() - 0.5) * 3,
+      vy:    2 + Math.random() * 4,
+      life:  1.0,  // individual fade tracker
+      decay: 0.003 + Math.random() * 0.002,
+    });
+  }
+
+  // Cap total particles at 900
+  confettiParticles = [...confettiParticles, ...newParticles].slice(-900);
+
+  // If already animating, just adding particles is enough
+  if (confettiRAF) return;
+
+  const startTime = performance.now();
+
+  function frame(now) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confettiParticles = confettiParticles.filter(p => p.life > 0);
+
+    confettiParticles.forEach(p => {
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.rot += p.rotV;
+      p.vy  += 0.08;
+      p.vx  *= 0.99;
+      p.life -= p.decay;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    if (confettiParticles.length > 0) {
+      confettiRAF = requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiRAF = null;
+    }
+  }
+
+  confettiRAF = requestAnimationFrame(frame);
+}
+
+
+function playBingoSound() {
+  if (!document.getElementById('optSound').checked) return;
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    // Fanfare: ascending arpeggio then held chord
+    const melody = [
+      { f: 523, t: 0,    dur: 0.15 },  // C5
+      { f: 659, t: 0.15, dur: 0.15 },  // E5
+      { f: 784, t: 0.30, dur: 0.15 },  // G5
+      { f: 1047,t: 0.45, dur: 0.5  },  // C6 held
+      { f: 784, t: 0.45, dur: 0.5  },  // G5 harmony
+      { f: 659, t: 0.45, dur: 0.5  },  // E5 harmony
+    ];
+    melody.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.35, start + 0.02);
+      gain.gain.setValueAtTime(0.35, start + dur - 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur);
+    });
+  } catch(e) {}
+}
+
+
+function playFanfare() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    // Big celebratory fanfare
+    const notes = [
+      { f: 523,  t: 0,    dur: 0.12 },
+      { f: 659,  t: 0.10, dur: 0.12 },
+      { f: 784,  t: 0.20, dur: 0.12 },
+      { f: 1047, t: 0.30, dur: 0.15 },
+      { f: 1319, t: 0.42, dur: 0.15 },
+      { f: 1047, t: 0.54, dur: 0.08 },
+      { f: 1319, t: 0.60, dur: 0.5  },
+      { f: 1047, t: 0.60, dur: 0.5  },
+      { f: 784,  t: 0.60, dur: 0.5  },
+    ];
+    notes.forEach(({ f, t, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      const start = ctx.currentTime + t;
+      osc.frequency.setValueAtTime(f, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.4, start + 0.02);
+      gain.gain.setValueAtTime(0.4, start + dur - 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start);
+      osc.stop(start + dur + 0.1);
+    });
+  } catch(e) {}
+}
+
 
 /* ── SEEDED RNG (Mulberry32) ── */
 function mulberry32(seed) {
@@ -1133,6 +1709,22 @@ function shuffle(arr) {
 
 /* ── GAME CODE ── */
 const WORD_PARTS = ['YARD','FIND','SALE','HUNT','DEAL','HAUL','PICK','GRAB','KEEP','LOOT'];
+const ROOM_CODE_KEY = 'gsb_room_code';
+
+function getOrCreateRoomCode() {
+  try {
+    const saved = localStorage.getItem(ROOM_CODE_KEY);
+    if (saved) return saved;
+  } catch(e) {}
+  const code = generateGameCode();
+  saveRoomCode(code);
+  return code;
+}
+
+function saveRoomCode(code) {
+  try { localStorage.setItem(ROOM_CODE_KEY, code); } catch(e) {}
+}
+
 function generateGameCode() {
   const word = WORD_PARTS[Math.floor(Math.random() * WORD_PARTS.length)];
   const num  = String(Math.floor(Math.random() * 9000) + 1000);
@@ -1143,10 +1735,11 @@ function applyGameCode(code, isJoin = false) {
   const clean = code.trim().toUpperCase();
   if (!clean) { currentSeed = null; return; }
   currentSeed = seedFromCode(clean);
-  // Always put code in the input box so it's readable/shareable
   const inp = document.getElementById('gameCodeInput');
   if (inp) inp.value = clean;
-  // Only show the green "active" pill when joining someone else's game
+  // Only save to persistent room code if this is OUR code (not joining someone else's)
+  if (!isJoin) saveRoomCode(clean);
+  // Show joined pill only when joining someone else's game
   const pill = document.getElementById('gameCodeDisplay');
   const txt  = document.getElementById('gameCodeText');
   if (txt)  txt.textContent = clean;
@@ -1154,14 +1747,16 @@ function applyGameCode(code, isJoin = false) {
 }
 
 function copyGameCode() {
-  const inp = document.getElementById('gameCodeInput');
-  if (!inp || !inp.value) return;
-  navigator.clipboard.writeText(inp.value).then(() => {
-    const btn = document.querySelector('.game-code-copy');
-    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 1500); }
+  const code = document.getElementById('gameCodeInput').value;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    document.querySelectorAll('.game-code-copy').forEach(btn => {
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = '📋 Copy', 1500);
+    });
   }).catch(() => {
-    // Fallback for browsers without clipboard API
-    inp.select(); document.execCommand('copy');
+    const inp = document.getElementById('gameCodeInput');
+    if (inp) { inp.removeAttribute('readonly'); inp.select(); document.execCommand('copy'); inp.setAttribute('readonly',''); }
   });
 }
 
@@ -1184,100 +1779,241 @@ function clearGameCode() {
 }
 
 /* ── CARD GENERATION ── */
+/* ── GEOLOCATION CATEGORY FILTERING ── */
+
+const STATE_CATEGORIES = {
+  'Alaskana':                  ['Alaska'],
+  'Washington (the good one)': ['Washington'],
+  'Arizona Bay':    ['Arizona'],
+};
+
+let detectedState = null;
+
+async function detectUserState() {
+  // Try multiple APIs in order until one works
+  const apis = [
+    async () => {
+      const r = await fetch('https://ipwho.is/');
+      const d = await r.json();
+      return d.region;
+    },
+    async () => {
+      const r = await fetch('https://ipapi.co/region/');
+      const t = await r.text();
+      // Returns plain text region name
+      return t.trim();
+    },
+    async () => {
+      const r = await fetch('https://ip.seeip.org/geoip');
+      const d = await r.json();
+      return d.region;
+    },
+  ];
+
+  for (const api of apis) {
+    try {
+      const region = await api();
+      if (region && region.length > 1 && !region.includes('<')) {
+        detectedState = region.trim();
+        console.log('Detected region:', detectedState);
+        if (document.getElementById('catselRows')) buildCatSelRows();
+        return;
+      }
+    } catch(e) {
+      // Try next API
+    }
+  }
+
+  // All APIs failed
+  console.log('Geolocation failed — all APIs unreachable. State set to Unknown.');
+  detectedState = null;
+  if (document.getElementById('catselRows')) buildCatSelRows();
+}
+
+function getStateCategoryDefault(cat) {
+  // Returns the default slider value for a state category based on detected state
+  const states = STATE_CATEGORIES[cat];
+  if (!states) return 4; // not a state category — normal
+  if (!detectedState) return 1; // no detection — hide by default
+  return states.includes(detectedState) ? 4 : 1; // match = normal, no match = hidden
+}
+
+function getDetectedStateName() {
+  if (!detectedState) return 'Unknown';
+  return detectedState;
+}
+
+// 7 positions: 1=Hidden, 2=Unlikely, 3=Rarely, 4=Normal, 5=Often, 6=Likely, 7=Required
+const SLIDER_LABELS  = ['Hidden', 'Unlikely', 'Rarely', 'Normal', 'Often', 'Likely', 'Required'];
+const SLIDER_WEIGHTS = [0, 1, 2, 3, 5, 8, Infinity]; // Infinity = guaranteed
+const SLIDER_COLORS  = [
+  '#c0392b', // 1 Hidden     - red
+  '#e67e22', // 2 Unlikely   - orange-red
+  '#f39c12', // 3 Rarely     - amber
+  '#888888', // 4 Normal     - gray
+  '#27ae60', // 5 Often      - light green
+  '#1e8449', // 6 Likely     - green
+  '#145a32', // 7 Required   - dark green
+];
+
+function getSliderVal(safe) {
+  const el = document.getElementById(`slider_${safe}`);
+  return el ? parseInt(el.value) : 4;
+}
+
 function getCatPrefs() {
   const required = [], hidden = [];
   ALL_CATS.forEach(cat => {
     const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const reqEl  = document.getElementById(`req_${safe}`);
-    const hideEl = document.getElementById(`hide_${safe}`);
-    if (reqEl  && reqEl.checked)  required.push(cat);
-    if (hideEl && hideEl.checked) hidden.push(cat);
+    const val = getSliderVal(safe);
+    if (val === 7) required.push(cat);
+    if (val === 1) hidden.push(cat);
   });
   return { required, hidden };
 }
 
+function getCatWeights() {
+  const weights = {};
+  ALL_CATS.forEach(cat => {
+    const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
+    const val = getSliderVal(safe);
+    weights[cat] = SLIDER_WEIGHTS[val - 1];
+  });
+  return weights;
+}
+
 function buildNewCardData() {
   const { required, hidden } = getCatPrefs();
-  const available = ALL_CATS.filter(c => !hidden.includes(c) && !required.includes(c));
+  const weights = getCatWeights();
+
+  // Build weighted pool (exclude hidden and required)
+  const pool = [];
+  ALL_CATS.forEach(cat => {
+    if (hidden.includes(cat) || required.includes(cat)) return;
+    const w = weights[cat];
+    if (w > 0) {
+      for (let i = 0; i < w; i++) pool.push(cat);
+    }
+  });
 
   // Use seeded shuffle if a game code is active, else random
-  const rng      = currentSeed !== null ? mulberry32(currentSeed) : null;
-  const sfn      = (arr) => rng ? seededShuffle(arr, rng) : shuffle(arr);
+  const rng = currentSeed !== null ? mulberry32(currentSeed) : null;
+  const sfn = (arr) => rng ? seededShuffle(arr, rng) : shuffle(arr);
 
-  const needed = 5 - required.length;
-  const fillers = sfn(available).slice(0, needed);
-  const cats    = sfn([...required, ...fillers]);
-  const items   = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
+  const needed  = 5 - required.length;
+  const shuffled = sfn(pool);
+  // Pick unique categories from weighted pool
+  const seen = new Set(required);
+  const fillers = [];
+  for (const cat of shuffled) {
+    if (!seen.has(cat)) { seen.add(cat); fillers.push(cat); }
+    if (fillers.length >= needed) break;
+  }
+  const cats  = sfn([...required, ...fillers]);
+  const items = cats.map(cat => sfn([...CATEGORIES[cat]]).slice(0, 5));
   return { categories: cats, items };
 }
 
-/* ── CATEGORY SELECTION ── */
-const CAT_SEL_KEY = 'gsb_catsel_v1';
+/* ── CATEGORY SELECTION (SLIDERS) ── */
+const CAT_SEL_KEY = 'gsb_catsel_v2';
 
 function buildCatSelRows() {
   const saved = loadCatSel();
-  const tbody = document.getElementById('catselRows');
-  tbody.innerHTML = '';
-  ALL_CATS.forEach(cat => {
-    const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const isReq  = saved.required.includes(cat);
-    const isHide = saved.hidden.includes(cat);
-    const tr = document.createElement('tr');
-    tr.id = `catrow_${safe}`;
-    if (isReq)  tr.classList.add('cat-required-row');
-    if (isHide) tr.classList.add('cat-hidden-row');
-    tr.innerHTML = `
-      <td>${cat}</td>
-      <td><input type="checkbox" class="cat-check cat-check-req" id="req_${safe}" ${isReq ? 'checked' : ''} onchange="onCatPrefChange('${safe}','req')"></td>
-      <td><input type="checkbox" class="cat-check cat-check-hide" id="hide_${safe}" ${isHide ? 'checked' : ''} onchange="onCatPrefChange('${safe}','hide')"></td>
-    `;
-    tbody.appendChild(tr);
+  const container = document.getElementById('catselRows');
+  container.innerHTML = '';
+
+  const stateKeys = Object.keys(STATE_CATEGORIES);
+  const standardCats = ALL_CATS.filter(c => !stateKeys.includes(c));
+  const stateCats    = ALL_CATS.filter(c =>  stateKeys.includes(c));
+
+  // Render standard categories
+  standardCats.forEach(cat => renderCatRow(cat, saved, container));
+
+  // Render STATE OPTIONS section
+  const divider = document.createElement('div');
+  divider.style.cssText = 'margin: 14px 0 8px; display:flex; align-items:center; gap:10px;';
+  divider.innerHTML = `
+    <div style="flex:1; height:1px; background:#ddd;"></div>
+    <span style="font-family:\'Fredoka One\',cursive; font-size:.78rem; color:#888; white-space:nowrap;">📍 STATE OPTIONS — Detected: <strong style="color:var(--navy)">${getDetectedStateName()}</strong></span>
+    <div style="flex:1; height:1px; background:#ddd;"></div>`;
+  container.appendChild(divider);
+
+  // Render state categories with geolocation-aware defaults
+  stateCats.forEach(cat => {
+    const geoDefault = getStateCategoryDefault(cat);
+    renderCatRow(cat, saved, container, geoDefault);
   });
+
   updateCatSelCounters();
 }
 
-function onCatPrefChange(safe, type) {
-  const reqEl  = document.getElementById(`req_${safe}`);
-  const hideEl = document.getElementById(`hide_${safe}`);
-  // Mutually exclusive: checking one unchecks the other
-  if (type === 'req'  && reqEl.checked)  hideEl.checked = false;
-  if (type === 'hide' && hideEl.checked) reqEl.checked  = false;
+function renderCatRow(cat, saved, container, geoDefault) {
+  const safe    = cat.replace(/[^a-zA-Z0-9]/g, '_');
+  const initVal = saved[safe] !== undefined ? saved[safe] : (geoDefault !== undefined ? geoDefault : 4);
 
-  const { required, hidden } = getCatPrefs();
-  const available = ALL_CATS.length - hidden.length;
+  const row = document.createElement('div');
+  row.className = 'catsel-row';
+  row.id = `catrow_${safe}`;
+
+  const gradStops = SLIDER_COLORS.map((c, i) => `${c} ${i * 100/6}%`).join(', ');
+
+  row.innerHTML = `
+    <div class="catsel-cat-name">${cat}</div>
+    <input type="range" class="catsel-slider" id="slider_${safe}"
+      min="1" max="7" step="1" value="${initVal}"
+      style="background: linear-gradient(to right, ${gradStops});"
+      oninput="onSliderChange('${safe}', this.value)">
+    <div class="catsel-val-label" id="label_${safe}" style="color:${SLIDER_COLORS[initVal-1]}">${SLIDER_LABELS[initVal-1]}</div>
+  `;
+
+  applyRowStyle(row, initVal);
+  container.appendChild(row);
+}
+
+function onSliderChange(safe, val) {
+  val = parseInt(val);
+  const label = document.getElementById(`label_${safe}`);
+  const row   = document.getElementById(`catrow_${safe}`);
+  const slider = document.getElementById(`slider_${safe}`);
+
+  label.textContent = SLIDER_LABELS[val - 1];
+  label.style.color = SLIDER_COLORS[val - 1];
+
   const errEl = document.getElementById('catselError');
 
-  if (required.length > 5) {
-    reqEl.checked = false;
-    errEl.textContent = '⚠️ You can only require up to 5 categories (one per BINGO column).';
+  // Validate required cap
+  const { required, hidden } = getCatPrefs();
+  if (val === 7 && required.length > 5) {
+    slider.value = 6; // snap back
+    label.textContent = SLIDER_LABELS[5];
+    label.style.color = SLIDER_COLORS[5];
+    errEl.textContent = '⚠️ Max 5 required categories (one per BINGO column).';
     errEl.classList.add('show');
     updateCatSelCounters();
     return;
   }
-  if (available < 5) {
-    hideEl.checked = false;
-    errEl.textContent = `⚠️ You must leave at least 5 categories available. Currently ${ALL_CATS.length - hidden.length + 1} would remain.`;
+
+  // Validate hidden minimum
+  const available = ALL_CATS.length - hidden.length;
+  if (val === 1 && available < 5) {
+    slider.value = 2; // snap back
+    label.textContent = SLIDER_LABELS[1];
+    label.style.color = SLIDER_COLORS[1];
+    errEl.textContent = `⚠️ Must keep at least 5 categories available.`;
     errEl.classList.add('show');
     updateCatSelCounters();
     return;
   }
 
   errEl.classList.remove('show');
-
-  // Update row styling
-  const safe2 = safe;
-  ALL_CATS.forEach(cat => {
-    const s = cat.replace(/[^a-zA-Z0-9]/g, '_');
-    const row = document.getElementById(`catrow_${s}`);
-    if (!row) return;
-    const r = document.getElementById(`req_${s}`);
-    const h = document.getElementById(`hide_${s}`);
-    row.classList.toggle('cat-required-row', r && r.checked);
-    row.classList.toggle('cat-hidden-row',   h && h.checked);
-  });
-
+  applyRowStyle(row, val);
   updateCatSelCounters();
   saveCatSel();
+}
+
+function applyRowStyle(row, val) {
+  row.classList.toggle('is-hidden',   val === 1);
+  row.classList.toggle('is-required', val === 7);
 }
 
 function updateCatSelCounters() {
@@ -1290,8 +2026,12 @@ function updateCatSelCounters() {
 
 function saveCatSel() {
   try {
-    const { required, hidden } = getCatPrefs();
-    localStorage.setItem(CAT_SEL_KEY, JSON.stringify({ required, hidden }));
+    const data = {};
+    ALL_CATS.forEach(cat => {
+      const safe = cat.replace(/[^a-zA-Z0-9]/g, '_');
+      data[safe] = getSliderVal(safe);
+    });
+    localStorage.setItem(CAT_SEL_KEY, JSON.stringify(data));
   } catch(e) {}
 }
 
@@ -1300,7 +2040,56 @@ function loadCatSel() {
     const raw = localStorage.getItem(CAT_SEL_KEY);
     if (raw) return JSON.parse(raw);
   } catch(e) {}
-  return { required: [], hidden: [] };
+  return {};
+}
+
+function resetCatSel() {
+  document.getElementById('resetCatModal').style.display = 'flex';
+}
+function confirmResetCatSel() {
+  closeResetCatModal();
+  try { localStorage.removeItem(CAT_SEL_KEY); } catch(e) {}
+  buildCatSelRows();
+}
+function closeResetCatModal() {
+  document.getElementById('resetCatModal').style.display = 'none';
+}
+
+// Resume player modal
+let _resumePlayerData = null;
+function showResumePlayerModal(name, gameCode, existing) {
+  _resumePlayerData = { name, gameCode, existing };
+  document.getElementById('resumePlayerMsg').textContent =
+    `"${name}" is already in this game. Resume as this player?`;
+  document.getElementById('resumePlayerModal').style.display = 'flex';
+}
+async function confirmResumePlayer() {
+  closeResumePlayerModal();
+  if (!_resumePlayerData) return;
+  const { name, gameCode, existing } = _resumePlayerData;
+  _resumePlayerData = null;
+
+  mpPlayerId = existing.id;
+  mpPlayer   = { id: existing.id, name, game_code: gameCode };
+  try { localStorage.setItem('gsb_player_name', name); } catch(e) {}
+  mpSubscribe(gameCode);
+  subscribeChatChannel(gameCode);
+  document.getElementById('mpJoinArea').style.display   = 'none';
+  document.getElementById('mpActiveArea').style.display = 'block';
+  document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
+  document.getElementById('mpActiveCode').textContent    = gameCode;
+  await mpLoadPlayers(gameCode);
+  await loadChatHistory(gameCode);
+  const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+  await mpUpdateScore(score, Math.floor(score));
+}
+function cancelResumePlayer() {
+  closeResumePlayerModal();
+  _resumePlayerData = null;
+  setMpStatus('Enter a different name to join.', 'error');
+}
+function closeResumePlayerModal() {
+  document.getElementById('resumePlayerModal').style.display = 'none';
 }
 
 function toggleCatSel() {
@@ -1400,6 +2189,33 @@ function getWinLines() {
   return WIN_LINES;
 }
 
+// All possible 4-in-a-row sequences (subsets of WIN_LINES, length 4)
+const FOUR_LINES = (() => {
+  const lines = [];
+  WIN_LINES.forEach(line => {
+    for (let i = 0; i <= line.length - 4; i++) {
+      lines.push(line.slice(i, i + 4));
+    }
+  });
+  return lines;
+})();
+
+function countFourInARows() {
+  // Count 4-in-a-rows that are NOT part of a completed 5-in-a-row BINGO
+  // (so they only add value as a tiebreaker when no full line exists)
+  let count = 0;
+  FOUR_LINES.forEach(line => {
+    if (line.every(i => markedCells.has(i))) {
+      // Only count if the full 5-line it belongs to is NOT complete
+      const parentLine = WIN_LINES.find(wl => line.every(i => wl.includes(i)));
+      if (!parentLine || !parentLine.every(i => markedCells.has(i))) {
+        count++;
+      }
+    }
+  });
+  return count;
+}
+
 function checkWin(showBanner = true) {
   const mode = getGameMode();
   const winLines = getWinLines();
@@ -1413,10 +2229,7 @@ function checkWin(showBanner = true) {
   let hasWon = false;
   if (mode === 'fullcard') {
     hasWon = markedCells.size >= 25;
-  } else if (mode === '2line') {
-    hasWon = completedLines.size >= 2;
   } else {
-    // 1line, corners, Tshape, cross — need at least 1 complete pattern
     hasWon = completedLines.size >= 1;
   }
 
@@ -1446,8 +2259,12 @@ function checkWin(showBanner = true) {
 function updateScore() {
   const squares    = markedCells.size;
   const bingoCount = checkWin(true);
-  const score      = bingoCount + squares * 0.01;
-  document.getElementById('scoreVal').textContent = score.toFixed(2);
+  const fourCount  = countFourInARows();
+  // Score = bingos + squares * 0.01 + four-in-a-rows * 0.001
+  const score = bingoCount + squares * 0.01 + fourCount * 0.001;
+  // Display with 3 decimal places: X.YYZ (bingos.squares.fours)
+  document.getElementById('scoreVal').textContent = score.toFixed(3);
+  mpUpdateScore(score, bingoCount);
 }
 
 function toggleCell(el) {
@@ -1511,6 +2328,95 @@ function initModals() {
   createModal('modalOverlay',    '⚠️ New Card?',          'This will wipe your current card and all marked squares. Are you sure?',              'Yes, new card!',  'confirmNewCard()',    'closeModal()');
   createModal('revertModal',     '↩ Revert to Defaults?', 'This will clear all your current options and restore the original settings. Are you sure?', 'Yes, revert!',    'confirmRevertDefaults()', 'closeRevertModal()');
   createModal('confirmCellModal','✅ Mark this square?',   '"<span id=\'confirmCellText\'></span>"',                                               'Yes, mark it!',   'confirmCellMark()',  'cancelCellMark()');
+
+  // Reset categories modal
+  if (!document.getElementById('resetCatModal')) {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'resetCatModal';
+    el.innerHTML = `
+      <div class="modal-box">
+        <h3>↩ Reset Categories?</h3>
+        <p>This will reset all category sliders back to Normal. Are you sure?</p>
+        <div class="modal-btns">
+          <button class="modal-btn modal-btn-yes" onclick="confirmResetCatSel()">Yes, reset!</button>
+          <button class="modal-btn modal-btn-no"  onclick="closeResetCatModal()">Cancel</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+
+  // Resume player modal
+  if (!document.getElementById('resumePlayerModal')) {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'resumePlayerModal';
+    el.innerHTML = `
+      <div class="modal-box">
+        <h3>👤 Name Already in Use</h3>
+        <p><span id="resumePlayerMsg"></span></p>
+        <div class="modal-btns">
+          <button class="modal-btn modal-btn-yes" onclick="confirmResumePlayer()">Yes, resume!</button>
+          <button class="modal-btn modal-btn-no"  onclick="cancelResumePlayer()">Use different name</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+  if (!document.getElementById('termsModal')) {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'termsModal';
+    el.innerHTML = `
+      <div class="modal-box" style="max-width:500px; max-height:80vh; overflow-y:auto;">
+        <h3 style="font-size:1.1rem;">📋 Terms of Use</h3>
+        <div style="font-size:.78rem; line-height:1.7; color:#444; text-align:left;">
+          <p><strong>Welcome to Yardingo!</strong> By using this app you agree to these terms.</p>
+          <p><strong>1. Use at your own risk.</strong> Yardingo is provided free of charge, as-is, with no warranties of any kind.</p>
+          <p><strong>2. Be respectful.</strong> When using the chat and multiplayer features, treat other players with respect. Harassment, hate speech, threats, or illegal content of any kind are strictly prohibited.</p>
+          <p><strong>3. No personal data collected.</strong> Yardingo does not collect, store, or share any personally identifiable information. Player names entered in multiplayer are stored temporarily and deleted automatically when your game session expires.</p>
+          <p><strong>4. You are responsible for your content.</strong> Any messages or content you send through the chat feature are your responsibility. The app owner is not liable for user-generated content.</p>
+          <p><strong>5. Age.</strong> This app is intended for users aged 13 and older.</p>
+          <p><strong>6. Availability.</strong> We reserve the right to modify or discontinue the service at any time without notice.</p>
+          <p><strong>7. Contact.</strong> Questions? Email <a href="mailto:garagesalebingo@gmail.com" style="color:#073b4c;">garagesalebingo@gmail.com</a></p>
+          <p style="color:#888; font-size:.72rem;">Last updated: April 2026</p>
+        </div>
+        <div class="modal-btns">
+          <button class="modal-btn modal-btn-yes" onclick="closeTerms()">Got it!</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+}
+
+function showTerms() {
+  const el = document.getElementById('termsModal');
+  if (el) el.style.display = 'flex';
+}
+function closeTerms() {
+  const el = document.getElementById('termsModal');
+  if (el) el.style.display = 'none';
+}
+
+/* ── PROFANITY FILTER ── */
+const BAD_WORDS = [
+  'fuck','shit','cunt','nigger','nigga','faggot','fag','retard','bitch',
+  'asshole','bastard','dick','cock','pussy','whore','slut','twat','wanker',
+  'motherfucker','bullshit','goddamn','prick','arse','spic','kike','chink',
+  'tranny','dyke','Nazi','rape'
+].map(w => w.toLowerCase());
+
+function containsProfanity(text) {
+  const lower = text.toLowerCase().replace(/[^a-z]/g, '');
+  return BAD_WORDS.some(word => lower.includes(word));
+}
+
+function censorMessage(text) {
+  let result = text;
+  BAD_WORDS.forEach(word => {
+    const re = new RegExp(word, 'gi');
+    result = result.replace(re, '*'.repeat(word.length));
+  });
+  return result;
 }
 
 /* ── NEW CARD FLOW ── */
@@ -1529,13 +2435,12 @@ function closeModal() {
 function generateCard(keepSeed = false) {
   markedCells = new Set();
   lastBingoCount = 0;
-  // If a specific seed was pre-set (join/start game), keep it.
-  // Otherwise generate a fresh random code for this card.
-  if (!keepSeed) {
-    currentSeed = null;
-    const code = generateGameCode();
-    applyGameCode(code);
-  }
+  // Restore persistent room code but DON'T use it as the card seed
+  const roomCode = getOrCreateRoomCode();
+  const inp = document.getElementById('gameCodeInput');
+  if (inp) inp.value = roomCode;
+  // Only use a deterministic seed when explicitly joining a shared game
+  if (!keepSeed) currentSeed = null;
   cardData = buildNewCardData();
   document.getElementById('winBanner').classList.remove('show');
   renderCard(true);
@@ -1565,6 +2470,8 @@ function saveOptions() {
       largeText:  document.getElementById('optLargeText').checked,
       showScore:  document.getElementById('optShowScore').checked,
       freeSpace:  document.getElementById('optFreeSpace').checked,
+      alaskana:   document.getElementById('optAlaskana') ? document.getElementById('optAlaskana').checked : false,
+      washington: document.getElementById('optWashington') ? document.getElementById('optWashington').checked : false,
       gameMode:   getGameMode(),
       colMode:    getColMode(),
     }));
@@ -1585,6 +2492,8 @@ function applyOptionsToUI(o) {
   document.getElementById('optLargeText').checked  = !!o.largeText;
   document.getElementById('optShowScore').checked  = o.showScore !== undefined ? !!o.showScore : true;
   document.getElementById('optFreeSpace').checked  = !!o.freeSpace;
+  if (document.getElementById('optAlaskana'))   document.getElementById('optAlaskana').checked   = !!o.alaskana;
+  if (document.getElementById('optWashington')) document.getElementById('optWashington').checked = !!o.washington;
   const modeVal = o.gameMode || '1line';
   const modeEl  = document.querySelector(`input[name="gameMode"][value="${modeVal}"]`);
   if (modeEl) modeEl.checked = true;
@@ -1628,7 +2537,7 @@ function applyLargeText() {
 }
 function applyDarkMode() {
   const on = document.getElementById('optDarkMode').checked;
-  document.body.style.filter = on ? 'invert(1) hue-rotate(180deg)' : '';
+  document.body.classList.toggle('dark-mode', on);
 }
 function applyShowScore() {
   const on = document.getElementById('optShowScore').checked;
@@ -1648,23 +2557,24 @@ function applyColMode() {
 }
 function applyFreeSpace() {
   const on  = document.getElementById('optFreeSpace').checked;
-  // Center cell = index 12 (col 2, row 2 in column-major: col*5+row = 2*5+2)
   const cell = document.querySelector('[data-index="12"]');
   if (!cell) return;
   if (on) {
     cell.classList.add('free-space', 'stamped');
     cell.classList.remove('winner');
-    cell.setAttribute('onclick', '');   // disable click
+    cell.setAttribute('onclick', '');
     cell.innerHTML = '★ FREE ★';
     markedCells.add(12);
   } else {
     cell.classList.remove('free-space', 'stamped');
     cell.setAttribute('onclick', 'toggleCell(this)');
-    cell.innerHTML = cardData.items[2][2]; // restore original item (col 2, row 2)
+    if (cardData && cardData.items && cardData.items[2]) {
+      cell.innerHTML = cardData.items[2][2];
+    }
     markedCells.delete(12);
   }
-  updateScore();
-  saveState();
+  // Don't call saveState here — let the caller decide when to save
+  // to avoid circular save/load issues
 }
 /* ── RULES TOGGLE ── */
 function toggleRules() {
@@ -1682,7 +2592,18 @@ document.head.appendChild(qScript);
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 600;
 
-initModals(); // inject modals into DOM before anything references them
+initModals();
+initSupabase();
+detectUserState(); // async — filters state categories by location
+
+// Pre-fill player name if previously used
+try {
+  const savedName = localStorage.getItem('gsb_player_name');
+  if (savedName) {
+    const inp = document.getElementById('mpNameInput');
+    if (inp) inp.value = savedName;
+  }
+} catch(e) {}
 
 try {
   // Render card first so DOM exists, then load options so applies work
@@ -1714,14 +2635,15 @@ try {
 
   applyShowScore();
   applyFreeSpace();
+  updateScore();
   applyColMode();
   buildCatSelRows();
 
-  // Make sure a game code is always visible after load
-  // (generateCard sets one, but loadState/renderCard path doesn't)
-  if (!document.getElementById('gameCodeInput').value) {
-    applyGameCode(generateGameCode(), false);
-  }
+  // Make sure room code is always visible — restore or create once
+  const roomCode = getOrCreateRoomCode();
+  const codeInp = document.getElementById('gameCodeInput');
+  if (codeInp && !codeInp.value) codeInp.value = roomCode;
+  // Don't set currentSeed from room code — seed is only for shared game joins
 } catch(e) {
   // If anything in init fails, nuke localStorage and start fresh
   console.error('Init error, resetting:', e);
@@ -1730,10 +2652,50 @@ try {
   buildCatSelRows();
 }
 
+// Auto-reconnect to multiplayer if was previously connected
+setTimeout(async () => {
+  try {
+    const savedPlayerId   = localStorage.getItem('gsb_mp_player_id');
+    const savedGameCode   = localStorage.getItem('gsb_mp_game_code');
+    const savedPlayerName = localStorage.getItem('gsb_mp_player_name');
+    if (!savedPlayerId || !savedGameCode || !savedPlayerName) return;
+    if (!sb) return;
+    // Verify player row still exists
+    const { data } = await sb.from('game_players').select('id').eq('id', savedPlayerId).maybeSingle();
+    if (data) {
+      mpPlayerId = savedPlayerId;
+      mpPlayer   = { id: savedPlayerId, name: savedPlayerName, game_code: savedGameCode };
+      mpSubscribe(savedGameCode);
+      subscribeChatChannel(savedGameCode);
+      document.getElementById('mpJoinArea').style.display   = 'none';
+      document.getElementById('mpActiveArea').style.display = 'block';
+      document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${savedPlayerName}"`;
+      document.getElementById('mpActiveCode').textContent    = savedGameCode;
+      await mpLoadPlayers(savedGameCode);
+      await loadChatHistory(savedGameCode);
+      const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+      await mpUpdateScore(score, Math.floor(score));
+      // Auto-open Play with Friends section
+      const mpBody   = document.getElementById('mpBody');
+      const mpToggle = document.getElementById('mpToggle');
+      if (mpBody && mpBody.classList.contains('collapsed')) {
+        mpBody.classList.remove('collapsed');
+        if (mpToggle) mpToggle.textContent = '▲ Hide';
+      }
+      console.log('Auto-reconnected to game:', savedGameCode);
+    } else {
+      // Row gone — session expired, clear saved session
+      localStorage.removeItem('gsb_mp_player_id');
+      localStorage.removeItem('gsb_mp_game_code');
+      localStorage.removeItem('gsb_mp_player_name');
+    }
+  } catch(e) { console.log('Auto-reconnect failed:', e); }
+}, 1500);
+
 /* ── SERVICE WORKER (PWA) ── */
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'yardingo-v1';
+    const CACHE = 'yardingo-v2';
     const OFFLINE_URL = '/GarageSaleBingo/';
 
     self.addEventListener('install', e => {
@@ -1752,6 +2714,13 @@ if ('serviceWorker' in navigator) {
     });
 
     self.addEventListener('fetch', e => {
+      const url = e.request.url;
+      // Never intercept API calls, only same-origin navigation
+      if (url.includes('supabase.co')) return;
+      if (url.includes('googleapis.com')) return;
+      if (url.includes('jsdelivr.net')) return;
+      if (url.includes('cdnjs.cloudflare.com')) return;
+      if (e.request.method !== 'GET') return;
       if (e.request.mode === 'navigate') {
         e.respondWith(
           fetch(e.request).catch(() => caches.match(OFFLINE_URL))
@@ -1778,6 +2747,305 @@ if ('serviceWorker' in navigator) {
       });
     })
     .catch(() => {}); // silently fail on local/unsupported environments
+}
+
+/* ── SUPABASE MULTIPLAYER ── */
+
+
+
+function initSupabase() {
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('Supabase ready');
+    } else {
+      // SDK not loaded yet — retry after a short delay
+      setTimeout(initSupabase, 300);
+    }
+  } catch(e) {
+    console.log('Supabase init failed:', e);
+  }
+}
+
+function toggleMP() {
+  const body   = document.getElementById('mpBody');
+  const toggle = document.getElementById('mpToggle');
+  const hidden = body.classList.toggle('collapsed');
+  toggle.textContent = hidden ? '▼ Show' : '▲ Hide';
+}
+
+async function mpJoin() {
+  if (!sb) {
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {}
+  }
+  if (!sb) { setMpStatus('Could not connect. Check your internet connection and try again.', 'error'); return; }
+
+  const name     = document.getElementById('mpNameInput').value.trim();
+  const gameCode = document.getElementById('gameCodeInput').value.trim().toUpperCase();
+  if (!name)     { setMpStatus('Please enter your name.', 'error'); return; }
+  if (!gameCode) { setMpStatus('A card code is required — tap New Card first.', 'error'); return; }
+
+  setMpStatus('Connecting...', '');
+
+  try {
+    // Check for existing player with same name in this game
+    const existingRes = await sb
+      .from('game_players')
+      .select('*')
+      .eq('game_code', gameCode)
+      .eq('player_name', name)
+      .maybeSingle();
+    const existing = existingRes.data;
+
+    if (existing) {
+      showResumePlayerModal(name, gameCode, existing);
+      return;
+    }
+
+    // No duplicate — upsert session and insert new player
+    try { await sb.from('game_sessions').upsert({ code: gameCode }, { onConflict: 'code' }); } catch(e) {}
+
+    const score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+    const res = await sb.from('game_players').insert({
+      game_code:   gameCode,
+      player_name: name,
+      score:       score,
+      bingos:      0
+    }).select().single();
+
+    if (res.error) throw new Error(res.error.message || 'Could not join game');
+    const data = res.data;
+
+    mpPlayerId = data.id;
+    mpPlayer   = { id: data.id, name, game_code: gameCode };
+    try {
+      localStorage.setItem('gsb_player_name', name);
+      localStorage.setItem('gsb_mp_player_id', data.id);
+      localStorage.setItem('gsb_mp_game_code', gameCode);
+      localStorage.setItem('gsb_mp_player_name', name);
+    } catch(e) {}
+
+    mpSubscribe(gameCode);
+    subscribeChatChannel(gameCode);
+
+    document.getElementById('mpJoinArea').style.display   = 'none';
+    document.getElementById('mpActiveArea').style.display = 'block';
+    document.getElementById('mpActiveStatus').textContent  = `✓ Playing as "${name}"`;
+    document.getElementById('mpActiveCode').textContent    = gameCode;
+
+    await mpLoadPlayers(gameCode);
+    await loadChatHistory(gameCode);
+    appendSystemMessage(`${name} joined the game`);
+
+  } catch(e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    setMpStatus('Connection failed: ' + msg, 'error');
+  }
+}
+
+let mpPollInterval     = null;
+let mpReconnectTimeout = null;
+
+function mpSubscribe(gameCode) {
+  if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
+  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
+  if (mpReconnectTimeout) { clearTimeout(mpReconnectTimeout); mpReconnectTimeout = null; }
+
+  mpChannel = sb.channel(`game-${gameCode}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_players' },
+      payload => {
+        if (payload.new && payload.new.game_code === gameCode) mpLoadPlayers(gameCode);
+      })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_players' },
+      payload => {
+        if (payload.new && payload.new.game_code === gameCode) {
+          mpLoadPlayers(gameCode);
+          if (payload.new.bingos > (payload.old.bingos || 0) && payload.new.id !== mpPlayerId)
+            showBingoToast(`🎉 ${payload.new.player_name} called BINGO!`);
+        }
+      })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'game_players' },
+      () => mpLoadPlayers(gameCode))
+    .subscribe(status => {
+      console.log('Realtime status:', status);
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        // Auto-reconnect after 3 seconds
+        if (mpPlayerId) {
+          mpReconnectTimeout = setTimeout(() => {
+            console.log('Reconnecting...');
+            mpSubscribe(gameCode);
+          }, 3000);
+        }
+      }
+    });
+
+  // Polling fallback every 5s
+  mpPollInterval = setInterval(() => {
+    if (mpPlayerId) mpLoadPlayers(gameCode);
+  }, 5000);
+}
+
+async function mpLoadPlayers(gameCode) {
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('game_players')
+    .select('*')
+    .eq('game_code', gameCode)
+    .order('score', { ascending: false });
+
+  if (error || !data) return;
+  renderMpPlayers(data);
+}
+
+function renderMpPlayers(players) {
+  const container = document.getElementById('mpPlayers');
+  if (!container) return;
+
+  container.innerHTML = players.map((p, i) => {
+    const isMe    = p.id === mpPlayerId;
+    const medal   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    const bingos  = p.bingos > 0 ? ` · ${p.bingos} BINGO${p.bingos>1?'s':''}` : '';
+    return `<div class="mp-player-row${isMe?' me':''}">
+      <span style="font-size:.9rem">${medal}</span>
+      <span class="mp-player-name">${p.player_name}${isMe ? ' <span class="mp-player-you">(you)</span>' : ''}</span>
+      <span class="mp-player-bingos">${bingos}</span>
+      <span class="mp-player-score">${parseFloat(p.score).toFixed(3)}</span>
+    </div>`;
+  }).join('');
+}
+
+async function mpUpdateScore(score, bingoCount) {
+  if (!sb || !mpPlayerId) return;
+  if (score === undefined) {
+    score = parseFloat(document.getElementById('scoreVal').textContent) || 0;
+    bingoCount = Math.floor(score);
+  }
+  await sb.from('game_players').update({
+    score:      score,
+    bingos:     bingoCount || 0,
+    updated_at: new Date().toISOString()
+  }).eq('id', mpPlayerId);
+}
+
+async function mpLeave() {
+  if (sb && mpPlayerId) {
+    await sb.from('game_players').delete().eq('id', mpPlayerId);
+  }
+  if (mpChannel) { sb.removeChannel(mpChannel); mpChannel = null; }
+  if (mpPollInterval) { clearInterval(mpPollInterval); mpPollInterval = null; }
+  if (mpReconnectTimeout) { clearTimeout(mpReconnectTimeout); mpReconnectTimeout = null; }
+  clearChat();
+  mpPlayerId = null;
+  mpPlayer   = null;
+  // Clear saved session so we don't auto-reconnect
+  try {
+    localStorage.removeItem('gsb_mp_player_id');
+    localStorage.removeItem('gsb_mp_game_code');
+    localStorage.removeItem('gsb_mp_player_name');
+  } catch(e) {}
+  document.getElementById('mpJoinArea').style.display   = 'block';
+  document.getElementById('mpActiveArea').style.display = 'none';
+  document.getElementById('mpPlayers').innerHTML = '';
+  setMpStatus('Playing solo — join to share live scores with friends.', '');
+}
+
+function setMpStatus(msg, type) {
+  const el = document.getElementById('mpStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'mp-status' + (type ? ' ' + type : '');
+}
+
+function showBingoToast(msg) {
+  const toast = document.getElementById('bingoToast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+/* ── CHAT ── */
+let chatChannel = null;
+
+async function sendChatMessage() {
+  if (!sb || !mpPlayerId || !mpPlayer) return;
+  const input = document.getElementById('mpChatInput');
+  const raw   = input.value.trim();
+  if (!raw) return;
+  input.value = '';
+
+  // Censor profanity before sending
+  const msg = censorMessage(raw);
+
+  await sb.from('game_messages').insert({
+    game_code:   mpPlayer.game_code,
+    player_name: mpPlayer.name,
+    message:     msg
+  });
+}
+
+function subscribeChatChannel(gameCode) {
+  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
+
+  chatChannel = sb.channel(`chat-${gameCode}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'game_messages'
+    }, payload => {
+      if (payload.new && payload.new.game_code === gameCode) {
+        appendChatMessage(payload.new);
+      }
+    })
+    .subscribe();
+}
+
+async function loadChatHistory(gameCode) {
+  if (!sb) return;
+  const { data } = await sb
+    .from('game_messages')
+    .select('*')
+    .eq('game_code', gameCode)
+    .order('created_at', { ascending: true })
+    .limit(50);
+  if (data) data.forEach(appendChatMessage);
+}
+
+function appendChatMessage(row) {
+  const container = document.getElementById('mpChatMessages');
+  if (!container) return;
+  const isMe = row.player_name === (mpPlayer && mpPlayer.name);
+  const div  = document.createElement('div');
+  div.className = `mp-chat-msg${isMe ? ' msg-me' : ''}`;
+  div.innerHTML = `<span class="msg-name">${row.player_name}:</span>${escapeHtml(row.message)}`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendSystemMessage(msg) {
+  const container = document.getElementById('mpChatMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'mp-chat-msg msg-system';
+  div.textContent = msg;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function clearChat() {
+  const container = document.getElementById('mpChatMessages');
+  if (container) container.innerHTML = '';
+  if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; }
 }
 </script>
 </body>
