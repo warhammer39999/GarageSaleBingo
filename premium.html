@@ -3044,11 +3044,34 @@ function mpSubscribe(gameCode) {
       }
     });
 
-  // Polling fallback every 5s
+  // Polling fallback every 3s (mobile timers are unreliable when backgrounded)
   mpPollInterval = setInterval(() => {
     if (mpPlayerId) mpLoadPlayers(gameCode);
-  }, 5000);
+  }, 3000);
 }
+
+// When phone comes out of pocket / tab regains focus, force a full reconnect
+// because the WebSocket silently dies while backgrounded and setInterval freezes
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && mpPlayerId) {
+    const gameCode = document.getElementById("gameCodeInput")?.value?.trim()?.toUpperCase();
+    if (!gameCode) return;
+    console.log("Tab visible again — resyncing multiplayer...");
+    mpLoadPlayers(gameCode);
+    mpSubscribe(gameCode);
+  }
+});
+
+// Also handle coming back online after losing network entirely
+window.addEventListener("online", () => {
+  if (mpPlayerId) {
+    const gameCode = document.getElementById("gameCodeInput")?.value?.trim()?.toUpperCase();
+    if (!gameCode) return;
+    console.log("Network restored — resubscribing...");
+    mpLoadPlayers(gameCode);
+    mpSubscribe(gameCode);
+  }
+});
 
 async function mpLoadPlayers(gameCode) {
   if (!sb) return;
@@ -3292,9 +3315,15 @@ async function initAuth() {
   }
 
   // Listen for auth state changes
+  // NOTE: Supabase fires SIGNED_IN on token refresh too — ignore those
+  // by only acting on genuine sign-ins (when app is not yet initialized)
   sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
+    if (event === 'TOKEN_REFRESHED') return; // ignore background token refresh
+    if (event === 'SIGNED_IN' && session && !appInitialized) {
       await onSignedIn(session.user);
+    } else if (event === 'SIGNED_IN' && session && appInitialized) {
+      // Already running — just keep currentUser up to date, don't re-init
+      currentUser = session.user;
     } else if (event === 'SIGNED_OUT') {
       showAuthOverlay();
     }
