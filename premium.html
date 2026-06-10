@@ -1433,6 +1433,16 @@
   © 2026 Yardingo. All game content, rules, and design are the property of Rob Barnett. All rights reserved.
 </div>
 
+<!-- Needs List — only shown to authorized users -->
+<div id="needsSection" style="display:none; max-width:600px; margin:24px auto 32px; padding:0 16px;">
+  <div style="background:var(--navy); color:var(--yellow); font-family:'Fredoka One',cursive; font-size:1.3rem; padding:10px 16px; border-radius:10px 10px 0 0; letter-spacing:.04em;">
+    🛒 Rob's Needs List
+  </div>
+  <div id="needsListItems" style="background:#fffbf0; border:2px solid var(--navy); border-top:none; border-radius:0 0 10px 10px; padding:12px 16px;">
+    <em style="color:#888;">Loading...</em>
+  </div>
+</div>
+
 
 
 <script>
@@ -3102,6 +3112,31 @@ function renderMpPlayers(players) {
   }).join('');
 }
 
+
+const NEEDS_EMAILS = ["rob@rbarnett.com", "garagesalebingo@gmail.com"];
+
+function showNeedsList() {
+  if (!currentUser) return;
+  const email = (currentUser.email || "").toLowerCase().trim();
+  if (!NEEDS_EMAILS.includes(email)) return;
+
+  const section = document.getElementById("needsSection");
+  const container = document.getElementById("needsListItems");
+  if (!section || !container) return;
+
+  // Pull Needs items from already-fetched categories
+  const cats = FETCHED_CATEGORIES || CATEGORIES;
+  const items = cats["Needs"];
+  if (!items || items.length === 0) {
+    container.innerHTML = "<em style="color:#888;">No items found.</em>";
+  } else {
+    container.innerHTML = items.map((item, i) =>
+      `<div style="padding:5px 0; border-bottom:1px solid #e8e0cc; font-size:.95rem;">`+
+      `<span style="color:#aaa; margin-right:8px;">${i+1}.</span>${item}</div>`
+    ).join("") + `<div style="padding:8px 0 2px; color:#aaa; font-size:.8rem;">${items.length} items</div>`;
+  }
+  section.style.display = "block";
+}
 async function mpUpdateScore(score, bingoCount) {
   if (!sb || !mpPlayerId) return;
   if (score === undefined) {
@@ -3381,6 +3416,8 @@ async function initApp() {
   await fetchCategoriesFromDB(userTier);
   // Rebuild catsel with fetched cats
   buildCatSelRows();
+  // Show Needs list for authorized users
+  showNeedsList();
 
   // Pre-fill player name if previously used
   try {
